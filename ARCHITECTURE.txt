@@ -1,0 +1,265 @@
+🏗️ SYSTEM ARCHITECTURE - HOW EVERYTHING CONNECTS
+===============================================
+
+
+ARCHITECTURE DIAGRAM:
+════════════════════
+
+                    ┌─────────────────┐
+                    │    Your Brain    │
+                    │  (User Interface)│
+                    └────────┬─────────┘
+                             │
+                    (Searches "Tesla")
+                             │
+                             ▼
+                   ┌─────────────────────┐
+                   │   STREAMLIT APP     │
+                   │  (news_analyzer.py) │
+                   └────┬────────────────┘
+                        │
+         ┌──────────────┼──────────────┐
+         │              │              │
+         ▼              ▼              ▼
+    ┌────────────┐ ┌─────────┐ ┌──────────────┐
+    │ NewsAPI    │ │ Gemini  │ │ TextBlob +   │
+    │ (Fetcher)  │ │ (AI)    │ │ Custom Code  │
+    │            │ │         │ │ (Analysis)   │
+    └────────────┘ └─────────┘ └──────────────┘
+         │              │              │
+         └──────────────┼──────────────┘
+                        │
+                        ▼
+            ┌─────────────────────┐
+            │  Processed Data     │
+            │  - Title            │
+            │  - Credibility      │
+            │  - Sentiment        │
+            │  - Summary          │
+            │  - Image            │
+            └─────────────────────┘
+                        │
+                        ▼
+            ┌─────────────────────┐
+            │  BEAUTIFUL CARDS    │
+            │  (Browser Display)  │
+            └─────────────────────┘
+
+
+DATA FLOW (Step by Step):
+═════════════════════════
+
+1. USER INPUTS
+   ┌─────────────────────────────────┐
+   │ Searches: "Artificial Intelligence"
+   │ Options: Last 7 days              │
+   │          Summarize: Yes           │
+   │ Clicks: Fetch & Analyze           │
+   └─────────────────────────────────┘
+                    │
+                    ▼
+
+2. NEWSAPI REQUEST
+   ┌─────────────────────────────────────────────────────┐
+   │ GET https://newsapi.org/v2/everything               │
+   │ ?q=Artificial Intelligence                          │
+   │ &from=2024-03-30                                    │
+   │ &sortBy=publishedAt                                 │
+   │ &pageSize=10                                        │
+   │ &apiKey=YOUR_SECRET_KEY                             │
+   └─────────────────────────────────────────────────────┘
+                         │
+                         ▼
+
+3. NEWSAPI RESPONSE (JSON Format)
+   ┌─────────────────────────────────────────────────────┐
+   │ {                                                    │
+   │   "articles": [                                     │
+   │     {                                               │
+   │       "title": "OpenAI Releases GPT-5",             │
+   │       "source": {"name": "TechCrunch"},             │
+   │       "description": "OpenAI announced...",         │
+   │       "content": "Full article text...",            │
+   │       "urlToImage": "https://...",                  │
+   │       "url": "https://techcrunch.com/...",          │
+   │       "publishedAt": "2024-03-31T15:00:00Z"        │
+   │     },                                              │
+   │     ... (9 more articles)                           │
+   │   ]                                                 │
+   │ }                                                   │
+   └─────────────────────────────────────────────────────┘
+                         │
+                         ▼
+
+4. ARTICLE PROCESSING (For Each Article)
+   
+   ARTICLE 1: "OpenAI Releases GPT-5"
+   
+   a) EXTRACT DATA:
+   ┌─────────────────────────────────────────────────────┐
+   │ Title: "OpenAI Releases GPT-5"                      │
+   │ Source: "TechCrunch"                                │
+   │ Content: "OpenAI announced today that GPT-5 will... │
+   │ Image URL: "https://..."                            │
+   │ Article URL: "https://techcrunch.com/..."           │
+   │ Published: "2024-03-31"                             │
+   └─────────────────────────────────────────────────────┘
+                         │
+                ┌────────┼────────┐
+                │        │        │
+                ▼        ▼        ▼
+
+   b) CREDIBILITY SCORE
+   ┌────────────────────┐
+   │ Source: TechCrunch │
+   │ Base: 75%          │
+   │ (known tech news)  │
+   │                    │
+   │ Content Analysis:  │
+   │ - Exclamations: 0  │
+   │ - ALL CAPS: 0      │
+   │ - No penalty       │
+   │                    │
+   │ Final: 75% ⚠️      │
+   └────────────────────┘
+   
+   c) SENTIMENT ANALYSIS
+   ┌────────────────────┐
+   │ Text Analysis:    │
+   │ + Words: released,│
+   │   announced, new  │
+   │ - Words: none     │
+   │                    │
+   │ Result:           │
+   │ "Positive 😊"     │
+   │ Polarity: +0.6    │
+   └────────────────────┘
+   
+   d) AI SUMMARY (via Gemini)
+   ┌──────────────────────────────────────┐
+   │ REQUEST:                             │
+   │ "Summarize this in 1-2 sentences"   │
+   │ [Full 500-word article text]         │
+   │                                      │
+   │ RESPONSE:                            │
+   │ "OpenAI released their latest AI     │
+   │  model GPT-5 with improved          │
+   │  reasoning and speed."              │
+   └──────────────────────────────────────┘
+                    │
+                    ▼
+
+5. COMBINE INTO CARD
+   ┌─────────────────────────────────────────────────────┐
+   │ ┌────────────────────────────────────────────────┐ │
+   │ │ [Article Image]                                │ │
+   │ │                                                │ │
+   │ │ OpenAI Releases GPT-5                         │ │
+   │ │ Source: TechCrunch | Published: 2024-03-31    │ │
+   │ │                                                │ │
+   │ │ ✅ Credibility: 75% ⚠️  😊 Positive Sentiment │ │
+   │ │                                                │ │
+   │ │ Summary: "OpenAI released their latest AI...  │ │
+   │ │                                                │ │
+   │ │ [Read Full Article →]                          │ │
+   │ └────────────────────────────────────────────────┘ │
+   └─────────────────────────────────────────────────────┘
+
+6. REPEAT for all 10 articles
+
+7. DISPLAY STATISTICS
+   ┌─────────────────────────────────────────────────────┐
+   │ 📈 10 Articles Analyzed                             │
+   │ 🎯 Avg Credibility: 76%                             │
+   │ 😊 Positive: 8 | 😢 Negative: 1 | 😐 Neutral: 1    │
+   └─────────────────────────────────────────────────────┘
+
+8. ALLOW SORTING
+   ┌─────────────────────────────────────────────────────┐
+   │ User chooses: "Sort by Credibility (High→Low)"      │
+   │                                                      │
+   │ App reorders articles:                              │
+   │ 1. Article A (95% ✅)                               │
+   │ 2. Article C (76% ⚠️)                               │
+   │ 3. Article B (42% ❌)                               │
+   └─────────────────────────────────────────────────────┘
+
+
+EXTERNAL DEPENDENCIES & THEIR ROLES:
+════════════════════════════════════
+
+1. NEWSAPI.ORG
+   Role: News Source Database
+   └─ What we use: fetch_news() function
+   └─ API Endpoint: https://newsapi.org/v2/everything
+   └─ Returns: Real articles from 10,000+ publishers
+   └─ Rate Limit: 1,000 requests/day (free tier)
+
+2. GOOGLE GEMINI API
+   Role: AI Text Summarization
+   └─ What we use: summarize_with_gemini() function
+   └─ Model: gemini-pro
+   └─ Capabilities: Reads text, generates summaries, understands context
+   └─ Rate Limit: 60 requests/minute (free tier)
+
+3. TEXTBLOB LIBRARY
+   Role: Sentiment Analysis
+   └─ What we use: get_sentiment() function
+   └─ Local Processing: No API call needed (runs on your computer)
+   └─ Method: Word polarity scoring
+   └─ Speed: Milliseconds per article
+
+4. CUSTOM CODE
+   Role: Credibility Scoring
+   └─ What we use: get_credibility_score() function
+   └─ Method 1: Source reputation database (manually created)
+   └─ Method 2: Language pattern analysis
+   └─ Combined: Source score × (1 - sensationalism penalty)
+
+
+PERFORMANCE CONSIDERATIONS:
+═══════════════════════════
+
+Sequential Processing Time:
+- NewsAPI fetch: ~2 seconds (1 network request)
+- Sentiment analysis: ~0.1 seconds per article × 10 = ~1 second
+- Credibility scoring: ~0.01 seconds per article × 10 = ~0.1 second
+- Gemini summaries: ~2 seconds per article × 10 = ~20 seconds (SLOW)
+- Total with summaries: ~23 seconds
+- Total without summaries: ~3 seconds
+
+Caching Strategy:
+- Results cached for 5 minutes
+- Subsequent searches of same term return instantly
+- User can force refresh with "Fetch & Analyze" button
+
+
+ERROR HANDLING:
+═══════════════
+
+If NewsAPI fails:
+→ Error message: "❌ Network error: [reason]"
+→ App doesn't crash
+→ User can try again
+
+If Gemini API fails:
+→ Summary shows: "Could not summarize: [error]"
+→ Still shows description fallback
+→ Rest of analysis continues
+
+If .env keys missing:
+→ NewsAPI error: "❌ NewsAPI key not found!"
+→ Gemini disabled gracefully
+→ App suggests creating .env file
+
+
+SCALABILITY:
+════════════
+
+Current Architecture:
+- Single user: Works fine
+- Multiple users: Would need Load Balancing
+- High traffic: Would need caching layer (Redis)
+- Large dataset: Would need database (PostgreSQL)
+
+For presentation: Single user is fine!

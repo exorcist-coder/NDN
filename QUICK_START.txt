@@ -1,0 +1,94 @@
+🚀 QUICK START - GET YOUR APP RUNNING IN 5 MINUTES
+===================================================
+
+STEP 1: GET YOUR API KEYS (3 minutes)
+─────────────────────────────────────
+
+A) NewsAPI Key:
+   1. Go to https://newsapi.org/register
+   2. Sign up (use your email)
+   3. Click email verification link
+   4. Copy your API key
+   5. Save it somewhere
+
+B) Gemini API Key:
+   1. Go to https://aistudio.google.com/apikey
+   2. Sign in with Google account
+   3. Click "Get API Key"
+   4. Click "Create new API key in new project"
+   5. Copy the key
+
+
+STEP 2: SET UP YOUR ENVIRONMENT (2 minutes)
+──────────────────────────────────────────
+
+1. Create .env file in the news-analyzer folder
+2. Add this content:
+
+NEWSAPI_KEY=paste_your_newsapi_key_here
+GEMINI_KEY=paste_your_gemini_key_here
+
+
+STEP 3: INSTALL & RUN (2 minutes)
+──────────────────────────────────
+
+Open Terminal/Command Prompt in the news-analyzer folder:
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the app
+streamlit run news_analyzer.py
+
+
+DONE! 🎉
+A browser window opens automatically with your app!
+Type something like "Tesla", "Bitcoin", or "AI News"
+Hit the button and watch the magic happen!
+
+
+WHAT YOU'RE PRESENTING
+──────────────────────
+
+The browser shows:
+✅ News articles fetched from real sources
+✅ Credibility score (0-100%)
+✅ AI summaries of each article
+✅ Sentiment analysis (positive/negative/neutral)
+✅ Sorting by credibility, date, or sentiment
+✅ Beautiful cards with images and links
+
+HOW TO IMPRESS THEM:
+
+1. Search for trending topics ("Elon Musk", "AI safety", etc.)
+2. Show how low-credibility sources get lower scores
+3. Point out how sentiment changes per topic
+4. Mention the Gemini API doing the summarization
+5. Talk about fake news detection (credibility scoring)
+
+
+TROUBLESHOOTING
+───────────────
+
+"API key error":
+→ Make sure .env file is in the same folder as news_analyzer.py
+→ Check you copied keys correctly (no extra spaces)
+
+"streamlit command not found":
+→ Run: pip install streamlit
+
+"Connection error":
+→ Check your internet connection
+→ Make sure API keys have quota left
+
+
+DEMO FLOW FOR PRESENTATION
+──────────────────────────
+
+1. Open app in browser
+2. Search: "Technology news" → Click button
+3. Show: "Look at the credibility scores - BBC gets 95%, unknown blogs get 40%"
+4. Scroll down: "AI just summarized all these articles in seconds"
+5. Sort by Sentiment: "This one is positive, this one is negative"
+6. Show Statistics: "Out of 10 articles, 6 were positive sentiment about the tech"
+7. Click article: "It opens the original source - you can verify yourself"

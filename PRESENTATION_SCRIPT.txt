@@ -1,0 +1,205 @@
+🎤 PRESENTATION SCRIPT - NAIL IT TOMORROW!
+=========================================
+
+[OPENING - 30 seconds]
+──────────────────────
+
+"Good [morning/afternoon]. How many of you ever wonder if news you read online is real?
+With billions of articles published daily, it's impossible to fact-check everything manually.
+We built an AI system that does exactly that - automatically."
+
+[Show the app loading on screen]
+
+
+[PROBLEM STATEMENT - 1 minute]
+──────────────────────────────
+
+"Here's the issue:
+1. People can't tell fake news from real news
+2. Reading summaries takes forever
+3. Articles can be misleading with biased language
+
+Our solution tackles all three with automation."
+
+
+[DEMO FLOW - 5-7 minutes]
+────────────────────────
+
+DEMO PART 1: FETCHING NEWS
+"Watch as we search for 'Artificial Intelligence news'..."
+[Type in search box and click button]
+"The app connects to NewsAPI - a real-time news database with thousands of sources."
+
+DEMO PART 2: CREDIBILITY ANALYSIS
+"Here's the magic. Notice the credibility scores?"
+[Point to scores]
+"BBC News gets 95% ✅ - it's a trusted source
+Reuters gets 94% ✅ - same
+But a random blog gets 45% ⚠️ - suspicious"
+
+HOW IT WORKS:
+"The system scores credibility in two ways:
+1. SOURCE REPUTATION - We have a database of 100+ news sources with known reliability
+2. CONTENT ANALYSIS - We check language patterns:
+   - Too many exclamation marks? Probably sensationalism.
+   - All caps words? Flag it.
+   - Over-emotional language? Lower the score."
+
+DEMO PART 3: AI SUMMARIES
+"These summaries? Written by Gemini, Google's AI."
+[Click on an article]
+"Instead of reading 500 words, you get the gist in 2 sentences.
+It reads the article, understands context, and distills the key points.
+Takes maybe 2 seconds per article."
+
+DEMO PART 4: SENTIMENT ANALYSIS
+"Let's sort by sentiment..."
+[Click sort dropdown, select "Sentiment"]
+"Now articles are ordered by emotional tone.
+Positive sentiment 😊 (optimistic articles at top)
+Negative sentiment 😢 (pessimistic articles at bottom)
+
+This is calculated using TextBlob, which analyzes word choice:
+- 'Amazing', 'Thrilled', 'Incredible' = Positive
+- 'Crashed', 'Terrible', 'Disaster' = Negative
+- Neutral language = Neutral"
+
+DEMO PART 5: REAL-WORLD APPLICATION
+"Search for something trending right now..."
+[Search for current event]
+"See? Real articles, real analysis, real credibility scores.
+Imagine journalists using this to vet sources before publishing.
+Or regular people checking if an article is trustworthy before sharing it."
+
+
+[TECHNICAL EXPLANATION - 2 minutes]
+───────────────────────────────────
+
+"Under the hood, here's what's happening:
+
+1. STREAMLIT (Frontend)
+   - Beautiful web interface, zero HTML coding needed
+   - Loads in browser instantly
+   - Responsive design works on phones too
+
+2. NEWSAPI (Data Source)
+   - Aggregates articles from 10,000+ publishers
+   - Returns raw data (title, content, source, image, date)
+   - REST API - simple HTTP requests
+
+3. GOOGLE GEMINI (Summarization AI)
+   - State-of-the-art language model
+   - Understands context and meaning
+   - Generates human-like summaries in seconds
+
+4. TEXTBLOB (Sentiment Analysis)
+   - Natural Language Processing library
+   - Analyzes emotional tone of text
+   - Assigns polarity score (-1 to +1)
+
+5. CUSTOM CREDIBILITY ENGINE
+   - Scores sources based on reputation database
+   - Penalizes sensationalist language patterns
+   - Combines both methods for final score (0-100%)"
+
+
+[WHY THIS IS IMPRESSIVE - 1 minute]
+────────────────────────────────────
+
+"What's cool about this project:
+
+✅ PRACTICAL - Solves a real problem (fake news)
+✅ TECHNICAL - Combines 4 different APIs
+✅ INTELLIGENT - Uses Google's AI for summaries
+✅ FAST - Analyzes 10 articles in seconds
+✅ BEAUTIFUL - Professional-looking interface
+✅ USABLE - No sign-up, works instantly"
+
+
+[CHALLENGES WE SOLVED - 1 minute]
+─────────────────────────────────
+
+"Building this wasn't easy. We had to:
+
+Challenge 1: API Integration
+→ Different APIs have different formats
+→ Solution: Standardize the data before processing
+
+Challenge 2: Speed
+→ Gemini API takes 1-2 seconds per article
+→ 10 articles = 20 seconds (too slow)
+→ Solution: Made summaries optional, cache results
+
+Challenge 3: Accuracy
+→ Sentiment analysis sometimes gets sarcasm wrong
+→ Solution: Combine source reputation with content analysis
+
+Challenge 4: Credibility Scoring
+→ Hard to rate news objectively
+→ Solution: Use trusted source database + language analysis"
+
+
+[FUTURE IMPROVEMENTS - 30 seconds]
+──────────────────────────────────
+
+"If we had more time, we'd add:
+- Fact-checking integration (verify claims)
+- Multiple language support
+- User accounts (save favorites)
+- API for other apps to use
+- Real-time browser extension"
+
+
+[CLOSING - 30 seconds]
+──────────────────────
+
+"In a world of misinformation, having AI that can:
+- Fetch articles instantly
+- Score credibility
+- Summarize quickly
+- Detect sentiment
+
+...is incredibly powerful.
+
+We built this in one night. Imagine what's possible with more time.
+
+The future of news verification is automated. And we built it.
+
+Thank you!"
+
+
+[Q&A PREP - Common Questions & Answers]
+──────────────────────────────────────
+
+Q: "How do you know if the credibility scores are correct?"
+A: "Great question! Our database is based on established journalism rankings 
+   (BBC, Reuters, AP are top-rated). We also check for sensationalist language. 
+   For absolute verification, users should cross-check with multiple sources. 
+   This is a tool to help prioritize which sources to trust, not a replacement 
+   for critical thinking."
+
+Q: "What if someone disagrees with a credibility score?"
+A: "The scoring is transparent - it's based on source reputation + language analysis. 
+   Users can see why an article got a certain score and decide for themselves. 
+   Our AI isn't claiming to be 100% accurate, just helpful."
+
+Q: "Isn't this replacing human fact-checkers too much?"
+A: "No, this is a first-pass filter. Professional journalists still need to verify facts. 
+   But for regular people, this helps them avoid sharing obviously FALSE sources. 
+   It's like spell-check vs. professional editor."
+
+Q: "How did you build this so fast?"
+A: "1. We used existing APIs (NewsAPI, Gemini, TextBlob)
+   2. Streamlit made the UI super fast (no HTML needed)
+   3. We focused on core features, not nice-to-haves
+   4. Good planning beforehand"
+
+Q: "Can this be commercialized?"
+A: "Potentially! NewsAPI has commercial plans, and Gemini has enterprise pricing. 
+   Journalists, newsrooms, or fact-checkers could use this. We'd need to improve accuracy 
+   and add more features though."
+
+Q: "Will AI-generated articles fool this system?"
+A: "Good question! AI articles would likely score high on credibility (good grammar, 
+   less sensationalism) but be completely false. We'd need to add AI-detection or 
+   cross-reference with multiple sources."
