@@ -6,39 +6,56 @@ from textblob import TextBlob
 import os
 from dotenv import load_dotenv
 import time
-import webbrowser
 
 # Load environment variables
 load_dotenv()
 
-# Auto-open browser on startup
-if 'browser_opened' not in st.session_state:
-    webbrowser.open('http://localhost:8501')
-    st.session_state.browser_opened = True
-
 # Set page config
 st.set_page_config(
-    page_title="📰 News Analyzer Pro",
+    page_title="📰 Professional News Analyzer",
     page_icon="📰",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better UI
+# Professional CSS theme
 st.markdown("""
     <style>
-    .main-header { font-size: 2.5em; color: #1f77b4; margin-bottom: 10px; }
-    .card { background-color: #f0f2f6; padding: 15px; border-radius: 10px; margin: 10px 0; }
-    .high-credibility { color: #28a745; font-weight: bold; }
-    .low-credibility { color: #dc3545; font-weight: bold; }
-    .neutral-credibility { color: #ffc107; font-weight: bold; }
-    .positive-sentiment { color: #28a745; }
-    .negative-sentiment { color: #dc3545; }
-    .neutral-sentiment { color: #6c757d; }
+    .main-header { 
+        font-size: 2.8em; 
+        color: #00d4ff; 
+        margin-bottom: 5px;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+    .subtitle {
+        font-size: 0.9em;
+        color: #888;
+        margin-bottom: 20px;
+    }
+    .tier1 { color: #28a745; font-weight: bold; }
+    .tier2 { color: #ffc107; font-weight: bold; }
+    .tier3 { color: #ff9800; font-weight: bold; }
+    .unreliable { color: #dc3545; font-weight: bold; }
+    .card { 
+        background-color: white; 
+        padding: 20px; 
+        border-radius: 10px; 
+        border-left: 4px solid #00d4ff;
+        margin: 15px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .credibility-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 0.9em;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state for caching
+# Initialize session state
 if 'articles_cache' not in st.session_state:
     st.session_state.articles_cache = None
 if 'cache_time' not in st.session_state:
@@ -51,37 +68,90 @@ GEMINI_KEY = os.getenv("GEMINI_KEY", "")
 if GEMINI_KEY:
     genai.configure(api_key=GEMINI_KEY)
 
-# Credibility database of known sources
-CREDIBILITY_SCORES = {
-    "bbc": 95, "reuters": 94, "ap news": 93, "cnn": 85, "bbc news": 95,
-    "guardian": 88, "new york times": 87, "nyt": 87, "washington post": 86,
-    "financial times": 85, "the times": 84, "independent": 82, "telegraph": 80,
-    "politico": 78, "cnbc": 80, "business insider": 75, "medium": 40,
-    "twitter": 35, "reddit": 30, "unknown": 65
+# Professional 4-tier source credibility system
+TIER_1_SOURCES = {  # Tier 1: Major reputable sources (90-95%)
+    "bbc", "bbc news", "reuters", "ap news", "associated press", 
+    "guardian", "new york times", "nyt", "washington post", 
+    "financial times", "the times", "the telegraph", "telegraph", 
+    "economist", "nikkei asia", "ft", "wsj", "wall street journal",
+    "bbc world", "cnn international"
 }
 
-def get_credibility_score(source, content):
-    """Calculate credibility score based on source and content"""
-    # Base score from source
-    source_lower = source.lower()
-    base_score = CREDIBILITY_SCORES.get("unknown", 65)
+TIER_2_SOURCES = {  # Tier 2: Quality sources (75-85%)
+    "cnn", "bbc america", "cnbc", "politico", "politico pro",
+    "bloomberg", "reuters news", "vox", "the verge", "techcrunch",
+    "wired", "slate", "the atlantic", "time", "newsweek",
+    "independent", "the independent", "open democracy"
+}
+
+TIER_3_SOURCES = {  # Tier 3: Moderate sources (60-74%)
+    "medium", "forbes", "entrepreneur", "business insider",
+    "huffpost", "huff post", "mashable", "polygon", "variety",
+    "hollywood reporter", "deadline", "tvline"
+}
+
+UNRELIABLE_SOURCES = {  # Unreliable (below 50%)
+    "twitter", "x", "reddit", "4chan", "tiktok", "instagram"
+}
+
+def get_source_tier(source_name):
+    """Determine source credibility tier"""
+    source_lower = source_name.lower().strip()
     
-    for known_source, score in CREDIBILITY_SCORES.items():
-        if known_source in source_lower:
-            base_score = score
-            break
+    if any(tier1 in source_lower for tier1 in TIER_1_SOURCES):
+        return "tier1", 93, "#28a745"
+    elif any(tier2 in source_lower for tier2 in TIER_2_SOURCES):
+        return "tier2", 78, "#ffc107"
+    elif any(tier3 in source_lower for tier3 in TIER_3_SOURCES):
+        return "tier3", 65, "#ff9800"
+    elif any(unreliable in source_lower for unreliable in UNRELIABLE_SOURCES):
+        return "unreliable", 35, "#dc3545"
+    else:
+        return "unknown", 55, "#6c757d"
+
+def analyze_content_quality(content):
+    """Analyze content for quality indicators"""
+    if not content or len(content) < 50:
+        return -15
     
-    # Content quality adjustments (less harsh)
+    score_adjustment = 0
+    
+    # Check for proper sentence structure
+    sentences = [s for s in content.split('.') if len(s.strip()) > 10]
+    if len(sentences) < 2:
+        score_adjustment -= 10
+    elif len(sentences) > 15:
+        score_adjustment += 5
+    
+    # Check for quoted sources
+    if '"' in content or "'" in content:
+        score_adjustment += 5
+    
+    # Check for sensationalism
+    sensational_words = ["shocking", "unbelievable", "you won't believe", 
+                        "doctors hate", "secret", "exposed", "scandal"]
+    sensational_count = sum(1 for word in sensational_words if word.lower() in content.lower())
+    score_adjustment -= sensational_count * 3
+    
+    # Check for excessive caps
+    caps_words = len([w for w in content.split() if w.isupper() and len(w) > 2])
+    if caps_words > 5:
+        score_adjustment -= 5
+    
+    # Check for excessive exclamation marks
     exclamation_count = content.count("!")
-    caps_words = len([w for w in content.split() if w.isupper() and len(w) > 1])
+    if exclamation_count > 3:
+        score_adjustment -= 3
     
-    # Penalize sensationalism (lighter penalties)
-    if exclamation_count > 5:
-        base_score -= 5
-    if caps_words > 10:
-        base_score -= 3
+    return max(-20, min(20, score_adjustment))
+
+def get_credibility_score(source, content):
+    """Professional credibility scoring"""
+    tier, base_score, color = get_source_tier(source)
+    content_adjustment = analyze_content_quality(content)
     
-    return max(0, min(100, base_score))
+    final_score = base_score + content_adjustment
+    return max(0, min(100, final_score)), color
 
 def get_sentiment(text):
     """Analyze sentiment of text"""
@@ -101,7 +171,7 @@ def get_sentiment(text):
 def summarize_with_gemini(content, title):
     """Use Gemini to summarize article"""
     if not GEMINI_KEY:
-        return "API key not configured. Please set GEMINI_KEY environment variable."
+        return None
     
     try:
         model = genai.GenerativeModel('gemini-pro')
@@ -116,7 +186,7 @@ Summary:"""
         response = model.generate_content(prompt, stream=False)
         return response.text.strip()
     except Exception as e:
-        return f"Could not summarize: {str(e)}"
+        return None
 
 def fetch_news(query, days=7):
     """Fetch news from NewsAPI"""
@@ -133,7 +203,7 @@ def fetch_news(query, days=7):
             "from": from_date,
             "sortBy": "publishedAt",
             "language": "en",
-            "pageSize": 10,
+            "pageSize": 15,
             "apiKey": NEWSAPI_KEY
         }
         
@@ -150,8 +220,8 @@ def fetch_news(query, days=7):
         st.error(f"❌ Network error: {str(e)}")
         return None
 
-def process_articles(articles, summarize=True):
-    """Process articles with summaries and credibility scores"""
+def process_articles(articles, use_gemini=True):
+    """Process articles with credibility scores and AI summaries"""
     processed = []
     
     progress_bar = st.progress(0)
@@ -162,28 +232,34 @@ def process_articles(articles, summarize=True):
         
         title = article.get("title", "N/A")
         source = article.get("source", {}).get("name", "Unknown")
-        content = article.get("description", "") + " " + article.get("content", "")
+        description = article.get("description", "")
+        content = article.get("content", "")
+        full_content = description + " " + content if description else content
+        
         image = article.get("urlToImage", "")
         url = article.get("url", "")
         published = article.get("publishedAt", "N/A")
         
-        # Calculate credibility
-        credibility = get_credibility_score(source, content)
+        # Calculate credibility with color coding
+        credibility, color = get_credibility_score(source, full_content)
         
         # Get sentiment
-        sentiment, polarity = get_sentiment(content)
+        sentiment, polarity = get_sentiment(full_content)
         
-        # Summarize (optional)
-        summary = ""
-        if summarize and GEMINI_KEY:
-            summary = summarize_with_gemini(content, title)
-        else:
-            summary = (article.get("description", "No summary available")[:200] + "...")
+        # Use Gemini for summary if enabled
+        summary = None
+        if use_gemini and GEMINI_KEY:
+            summary = summarize_with_gemini(full_content, title)
+        
+        # Fallback to description
+        if not summary:
+            summary = description[:200] if description else "No summary available"
         
         processed.append({
             "title": title,
             "source": source,
             "credibility": credibility,
+            "color": color,
             "sentiment": sentiment,
             "polarity": polarity,
             "summary": summary,
@@ -199,62 +275,52 @@ def process_articles(articles, summarize=True):
     
     return processed
 
-def display_article_card(article, index):
-    """Display individual article card"""
-    # Credibility color coding
-    if article["credibility"] >= 80:
-        cred_color = "high-credibility"
-        cred_icon = "✅"
-    elif article["credibility"] >= 60:
-        cred_color = "neutral-credibility"
-        cred_icon = "⚠️"
-    else:
-        cred_color = "low-credibility"
-        cred_icon = "❌"
+def display_article_card(article):
+    """Display individual article card with professional styling"""
+    cred = article["credibility"]
+    color = article["color"]
     
-    # Sentiment color coding
-    if "Positive" in article["sentiment"]:
-        sent_color = "positive-sentiment"
-    elif "Negative" in article["sentiment"]:
-        sent_color = "negative-sentiment"
-    else:
-        sent_color = "neutral-sentiment"
-    
-    col1, col2 = st.columns([1, 3])
-    
-    with col1:
-        if article["image"]:
-            st.image(article["image"], use_column_width=True)
-    
-    with col2:
-        st.markdown(f"### {article['title']}")
-        st.markdown(f"**Source:** {article['source']} | **Published:** {article['published'][:10]}")
-        
-        # Metrics row
-        metric_cols = st.columns(3)
-        with metric_cols[0]:
-            st.markdown(f"<p class='{cred_color}'>Credibility: {article['credibility']}% {cred_icon}</p>", unsafe_allow_html=True)
-        with metric_cols[1]:
-            st.markdown(f"<p class='{sent_color}'>Sentiment: {article['sentiment']}</p>", unsafe_allow_html=True)
-        
-        st.markdown(f"**Summary:** {article['summary']}")
-        st.markdown(f"[Read Full Article →]({article['url']})")
-    
-    st.divider()
+    st.markdown(f"""
+    <div class="card" style="border-left-color: {color};">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+            <h3 style="margin: 0; color: #1a1a1a;">{article['title']}</h3>
+            <span class="credibility-badge" style="background-color: {color}; color: white;">
+                {cred}% CREDIBLE
+            </span>
+        </div>
+        <p style="color: #666; margin: 5px 0; font-size: 0.9em;">
+            📰 <strong>{article['source']}</strong> | 📅 {article['published'][:10]} | {article['sentiment']}
+        </p>
+        <p style="color: #333; line-height: 1.6; margin: 10px 0;">
+            {article['summary']}
+        </p>
+        <a href="{article['url']}" target="_blank" style="
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: {color};
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 10px;
+        ">→ Read Full Article</a>
+    </div>
+    """, unsafe_allow_html=True)
 
 # =====================
 # MAIN APP
 # =====================
 
-st.markdown('<h1 class="main-header">📰 Automated News Summarizer & Fake News Detector</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">📰 PROFESSIONAL NEWS ANALYZER</h1>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Real-time Credibility Scoring | Sentiment Analysis | AI Summaries | Fact-Based Journalism</p>', unsafe_allow_html=True)
 
 col1, col2 = st.columns([2, 1])
 
 with col1:
     search_query = st.text_input(
-        "🔍 What news are you interested in?",
+        "🔍 Search Topic:",
         placeholder="e.g., Tesla, Bitcoin, Artificial Intelligence, Climate Change...",
-        value="technology"
+        value="Technology"
     )
 
 with col2:
@@ -262,11 +328,11 @@ with col2:
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    use_summaries = st.checkbox("✨ Generate AI Summaries", value=True, help="Uses Gemini API (slower but better)")
+    use_gemini = st.checkbox("✨ AI Summaries (Gemini)", value=True, help="Slower but better summaries")
 with col2:
-    sort_by = st.selectbox("Sort by:", ["Credibility (High→Low)", "Date (Newest)", "Sentiment"], index=0)
+    sort_by = st.selectbox("Sort by:", ["Credibility ↓", "Latest", "Sentiment"], index=0)
 with col3:
-    if st.button("🚀 Fetch & Analyze News", type="primary"):
+    if st.button("🚀 FETCH & ANALYZE", type="primary"):
         st.session_state.force_refresh = True
 
 st.divider()
@@ -294,13 +360,13 @@ if search_query:
         articles = st.session_state.articles_cache
     
     if articles:
-        with st.spinner("⏳ Processing articles..."):
-            processed = process_articles(articles, summarize=use_summaries)
+        with st.spinner("⏳ Analyzing articles..."):
+            processed = process_articles(articles, use_gemini=use_gemini)
         
         # Sort articles
-        if sort_by == "Credibility (High→Low)":
+        if sort_by == "Credibility ↓":
             processed.sort(key=lambda x: x["credibility"], reverse=True)
-        elif sort_by == "Date (Newest)":
+        elif sort_by == "Latest":
             processed.sort(key=lambda x: x["published"], reverse=True)
         elif sort_by == "Sentiment":
             processed.sort(key=lambda x: x["polarity"], reverse=True)
@@ -315,32 +381,31 @@ if search_query:
         neutral_count = len(processed) - positive_count - negative_count
         
         with stats_col1:
-            st.metric("📈 Articles Analyzed", len(processed))
+            st.metric("📈 Articles", len(processed))
         with stats_col2:
             st.metric("🎯 Avg Credibility", f"{avg_credibility:.0f}%")
         with stats_col3:
-            st.metric("😊 Positive Sentiment", f"{positive_count}/{len(processed)}")
+            st.metric("😊 Positive", f"{positive_count}/{len(processed)}")
         with stats_col4:
-            st.metric("😢 Negative Sentiment", f"{negative_count}/{len(processed)}")
+            st.metric("😢 Negative", f"{negative_count}/{len(processed)}")
         
         st.divider()
         
         # Display articles
         st.subheader("📰 Analyzed Articles")
         for idx, article in enumerate(processed, 1):
-            with st.expander(f"{idx}. {article['title'][:80]}..."):
-                display_article_card(article, idx)
+            display_article_card(article)
 
 else:
-    st.info("👈 Enter a search query above to get started!")
+    st.info("👈 Enter a search query to get started!")
 
 # Footer
 st.divider()
 st.markdown("""
 <div style='text-align: center; color: gray; font-size: 0.9em;'>
-💡 <b>How This Works:</b> This tool fetches real news articles, analyzes their credibility based on source reputation and language patterns, 
-generates AI summaries, and detects emotional sentiment. Always cross-reference with official sources!
+💡 <b>How This Works:</b> Fetches real news, analyzes credibility based on source & content, 
+generates AI summaries with Gemini, and detects sentiment. Always verify with official sources!
 
-🔐 <b>Privacy:</b> Your searches are not stored. All processing happens in real-time.
+🔐 <b>Privacy:</b> Searches not stored. Real-time processing only.
 </div>
 """, unsafe_allow_html=True)
