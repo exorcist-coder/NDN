@@ -299,34 +299,54 @@ def process_articles(articles, use_gemini=True):
     return processed
 
 def display_article_card(article):
-    """Display individual article card with professional styling"""
+    """Display individual article card with professional styling and thumbnail"""
     cred = article["credibility"]
     color = article["color"]
+    image = article.get("image", "")
+    
+    # Build image HTML if available
+    image_html = ""
+    if image and image.strip():
+        image_html = f"""
+        <img src="{image}" style="
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 8px 8px 0 0;
+            display: block;
+            margin-bottom: 15px;
+        " onerror="this.style.display='none';" alt="Article thumbnail">
+        """
     
     st.markdown(f"""
-    <div class="card" style="border-left-color: {color};">
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
-            <h3 style="margin: 0; color: #1a1a1a;">{article['title']}</h3>
-            <span class="credibility-badge" style="background-color: {color}; color: white;">
-                {cred}% CREDIBLE
+    <div class="card" style="border-left-color: {color}; overflow: hidden;">
+        {image_html}
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+            <h3 style="margin: 0; color: #1a1a1a; flex: 1; line-height: 1.3;">{article['title']}</h3>
+            <span class="credibility-badge" style="background-color: {color}; color: white; flex-shrink: 0; margin-left: 10px;">
+                {cred}%
             </span>
         </div>
-        <p style="color: #666; margin: 5px 0; font-size: 0.9em;">
+        <p style="color: #666; margin: 8px 0; font-size: 0.85em; line-height: 1.4;">
             📰 <strong>{article['source']}</strong> | 📅 {article['published'][:10]} | {article['sentiment']}
         </p>
-        <p style="color: #333; line-height: 1.6; margin: 10px 0;">
+        <p style="color: #333; line-height: 1.6; margin: 12px 0; font-size: 0.95em;">
             {article['summary']}
         </p>
         <a href="{article['url']}" target="_blank" style="
             display: inline-block;
-            padding: 8px 16px;
+            padding: 10px 18px;
             background-color: {color};
             color: white;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 4px;
             font-weight: bold;
             margin-top: 10px;
-        ">→ Read Full Article</a>
+            font-size: 0.9em;
+            transition: opacity 0.2s;
+        " onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+            → Read Full Article
+        </a>
     </div>
     """, unsafe_allow_html=True)
 

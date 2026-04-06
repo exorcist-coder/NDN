@@ -8,6 +8,8 @@ import os
 from dotenv import load_dotenv
 import webbrowser
 import re
+from PIL import Image, ImageTk
+from io import BytesIO
 
 # Load environment variables
 load_dotenv()
@@ -286,6 +288,7 @@ class NewsAnalyzerApp:
             
             url = article.get("url", "")
             published = article.get("publishedAt", "N/A")[:10]
+            image = article.get("urlToImage", "")
             
             credibility, color = get_credibility_score(source, full_content)
             sentiment = get_sentiment(full_content)
@@ -300,6 +303,7 @@ class NewsAnalyzerApp:
                 "sentiment": sentiment,
                 "summary": summary,
                 "url": url,
+                "image": image,
                 "published": published
             })
         
@@ -321,8 +325,29 @@ class NewsAnalyzerApp:
         self.display_articles()
         self.status_label.config(text=f"✓ Sorted by {sort_by.capitalize()}")
     
+    def load_image_async(self, card_frame, url, width=250, height=150):
+        """Load image from URL asynchronously"""
+        def fetch_and_display():
+            try:
+                response = requests.get(url, timeout=5)
+                if response.status_code == 200:
+                    img_data = Image.open(BytesIO(response.content))
+                    img_data.thumbnail((width, height), Image.Resampling.LANCZOS)
+                    
+                    # Convert to PhotoImage
+                    photo = ImageTk.PhotoImage(img_data)
+                    
+                    # Create image label
+                    img_label = tk.Label(card_frame, image=photo, bg="white")
+                    img_label.image = photo  # Keep a reference
+                    img_label.pack(fill=tk.X, padx=0, pady=0)
+            except:
+                pass  # Silently fail if image can't be loaded
+        
+        threading.Thread(target=fetch_and_display, daemon=True).start()
+
     def display_articles(self):
-        """Display articles with professional styling"""
+        """Display articles with professional styling and thumbnails"""
         for widget in self.articles_container.winfo_children():
             widget.destroy()
         
@@ -338,20 +363,30 @@ class NewsAnalyzerApp:
             
             # Left accent bar (color coded by credibility score)
             accent_color = article["color"]
+            cred = article["credibility"]
             
             accent_frame = tk.Frame(card_frame, bg=accent_color, width=4)
             accent_frame.pack(side=tk.LEFT, fill=tk.Y)
             
             content_frame = tk.Frame(card_frame, bg="white")
-            content_frame.pack(fill=tk.BOTH, expand=True, padx=12, pady=8)
+            content_frame.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
+            
+            # Load and display thumbnail asynchronously if available
+            image_url = article.get("image") or article.get("urlToImage")
+            if image_url:
+                self.load_image_async(content_frame, image_url, width=600, height=180)
+            
+            # Text content frame
+            text_frame = tk.Frame(content_frame, bg="white")
+            text_frame.pack(fill=tk.BOTH, expand=True, padx=12, pady=10)
             
             # Title
-            title_label = tk.Label(content_frame, text=f"{idx}. {article['title']}", 
-                                  font=("Segoe UI", 11, "bold"), bg="white", wraplength=1200, justify=tk.LEFT)
-            title_label.pack(anchor="w", pady=(0, 5))
+            title_label = tk.Label(text_frame, text=f"{idx}. {article['title']}", 
+                                  font=("Segoe UI", 12, "bold"), bg="white", wraplength=1200, justify=tk.LEFT)
+            title_label.pack(anchor="w", pady=(0, 8))
             
             # Source and date row
-            meta_frame = tk.Frame(content_frame, bg="white")
+            meta_frame = tk.Frame(text_frame, bg="white")
             meta_frame.pack(fill=tk.X, pady=(0, 8))
             
             source_label = tk.Label(meta_frame, text=f"📰 {article['source']}", 
@@ -373,12 +408,12 @@ class NewsAnalyzerApp:
             cred_label.pack(side=tk.RIGHT, padx=(10, 0))
             
             # Summary
-            summary_label = tk.Label(content_frame, text=article["summary"], 
+            summary_label = tk.Label(text_frame, text=article["summary"], 
                                     font=("Segoe UI", 9), bg="white", wraplength=1200, justify=tk.LEFT, fg="#333")
             summary_label.pack(fill=tk.X, pady=(0, 8))
             
             # Read button
-            link_button = tk.Button(content_frame, text="→ Read Full Article", 
+            link_button = tk.Button(text_frame, text="→ Read Full Article", 
                                    command=lambda url=article["url"]: webbrowser.open(url),
                                    bg=accent_color, fg="white", font=("Segoe UI", 9, "bold"), 
                                    padx=15, pady=5, relief=tk.FLAT, cursor="hand2")
