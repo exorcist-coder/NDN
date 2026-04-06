@@ -8,8 +8,6 @@ import os
 from dotenv import load_dotenv
 import webbrowser
 import re
-from PIL import Image, ImageTk
-from io import BytesIO
 
 # Load environment variables
 load_dotenv()
@@ -42,36 +40,6 @@ TIER_3_SOURCES = {  # Tier 3: Moderate sources (60-74%)
 UNRELIABLE_SOURCES = {  # Unreliable (below 50%)
     "twitter", "x", "reddit", "4chan", "tiktok", "instagram"
 }
-
-def clean_summary(text, max_length=200):
-    """Clean and validate summary text"""
-    if not text or not isinstance(text, str):
-        return "No summary available"
-    
-    # Remove URLs and file paths
-    cleaned = text
-    import re
-    cleaned = re.sub(r'https?://\S+', '', cleaned)
-    cleaned = re.sub(r'\S+\.\w+/\S+', '', cleaned)  # Remove file paths
-    cleaned = re.sub(r'\[.*?\]', '', cleaned)  # Remove brackets
-    
-    # Clean up whitespace
-    cleaned = ' '.join(cleaned.split())
-    
-    # Truncate at sentence boundary
-    if len(cleaned) > max_length:
-        truncated = cleaned[:max_length]
-        last_period = truncated.rfind('.')
-        last_comma = truncated.rfind(',')
-        last_space = truncated.rfind(' ')
-        
-        cut_pos = max(last_period, last_comma, last_space)
-        if cut_pos > max_length - 50:
-            cleaned = truncated[:cut_pos+1]
-        else:
-            cleaned = truncated.rstrip() + "..."
-    
-    return cleaned.strip() if cleaned.strip() else "No summary available"
 
 def get_source_tier(source_name):
     """Determine source credibility tier"""
@@ -202,9 +170,9 @@ def fetch_news(query, days=7):
 class NewsAnalyzerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("📰 News Analyzer & Credibility Detector")
-        self.root.geometry("1400x850")
-        self.root.configure(bg="#f5f5f5")
+        self.root.title("The News Analyzer - Credibility Scoring & Fact-Based Journalism")
+        self.root.geometry("1200x900")
+        self.root.configure(bg="white")
         
         self.articles = []
         self.current_sort = "credibility"
@@ -212,55 +180,66 @@ class NewsAnalyzerApp:
         self.setup_ui()
     
     def setup_ui(self):
-        """Setup the professional user interface"""
+        """Setup the professional user interface - NYT style"""
         
-        # Header
-        header_frame = tk.Frame(self.root, bg="#1a1a1a", height=70)
+        # Header - Clean and minimal like NYT
+        header_frame = tk.Frame(self.root, bg="white", height=80)
         header_frame.pack(fill=tk.X, padx=0, pady=0)
+        header_frame.pack_propagate(False)
         
-        title_label = tk.Label(header_frame, text="📰 NEWS ANALYZER", 
-                              font=("Segoe UI", 22, "bold"), bg="#1a1a1a", fg="#00d4ff")
-        title_label.pack(pady=10)
+        title_label = tk.Label(header_frame, text="THE NEWS ANALYZER", 
+                              font=("Georgia", 28, "bold"), bg="white", fg="#000")
+        title_label.pack(pady=(15, 3))
         
-        subtitle = tk.Label(header_frame, text="Real-time Credibility Scoring | Sentiment Analysis | Fact-Based Journalism", 
-                           font=("Segoe UI", 9), bg="#1a1a1a", fg="#888")
-        subtitle.pack()
+        divider = tk.Frame(header_frame, bg="#000", height=2)
+        divider.pack(fill=tk.X, padx=50)
         
-        # Search Frame
-        search_frame = tk.Frame(self.root, bg="#f5f5f5")
-        search_frame.pack(fill=tk.X, padx=20, pady=15)
+        subtitle = tk.Label(header_frame, text="Independent Analysis • Credibility Scoring • Real-Time Journalism", 
+                           font=("Georgia", 9), bg="white", fg="#666")
+        subtitle.pack(pady=(5, 0))
         
-        tk.Label(search_frame, text="Search Topic:", font=("Segoe UI", 11, "bold"), bg="#f5f5f5").pack(side=tk.LEFT, padx=5)
+        # Search Frame - Elegant
+        search_frame = tk.Frame(self.root, bg="white", height=70)
+        search_frame.pack(fill=tk.X, padx=0, pady=0)
+        search_frame.pack_propagate(False)
         
-        self.search_entry = tk.Entry(search_frame, font=("Segoe UI", 11), width=35, relief=tk.FLAT)
-        self.search_entry.pack(side=tk.LEFT, padx=10)
+        inner_search = tk.Frame(search_frame, bg="white")
+        inner_search.pack(fill=tk.X, padx=50, pady=15)
+        
+        tk.Label(inner_search, text="Search:", font=("Georgia", 11, "bold"), bg="white", fg="#000").pack(side=tk.LEFT, padx=(0, 10))
+        
+        self.search_entry = tk.Entry(inner_search, font=("Georgia", 12), width=40, relief=tk.FLAT, bg="#f5f5f5", 
+                                     bd=0, highlightthickness=1, highlightbackground="#ddd", highlightcolor="#999")
+        self.search_entry.pack(side=tk.LEFT, padx=(0, 10), ipady=6)
         self.search_entry.insert(0, "Technology")
         
-        tk.Button(search_frame, text="🔍 SEARCH", command=self.search_news, 
-                 bg="#00d4ff", fg="#000", font=("Segoe UI", 10, "bold"), padx=25, relief=tk.FLAT).pack(side=tk.LEFT, padx=5)
+        tk.Button(inner_search, text="SEARCH", command=self.search_news, 
+                 bg="#000", fg="white", font=("Georgia", 11, "bold"), padx=20, pady=5, relief=tk.FLAT, cursor="hand2").pack(side=tk.LEFT)
         
-        # Options frame
-        options_frame = tk.Frame(self.root, bg="#f5f5f5")
-        options_frame.pack(fill=tk.X, padx=20, pady=10)
+        # Options frame - Subtle
+        options_frame = tk.Frame(self.root, bg="white", height=50)
+        options_frame.pack(fill=tk.X, padx=0, pady=0)
+        options_frame.pack_propagate(False)
         
-        tk.Label(options_frame, text="Sort By:", font=("Segoe UI", 10, "bold"), bg="#f5f5f5").pack(side=tk.LEFT, padx=5)
+        inner_options = tk.Frame(options_frame, bg="white")
+        inner_options.pack(fill=tk.X, padx=50, pady=10)
+        
+        tk.Label(inner_options, text="Sort by:", font=("Georgia", 10), bg="white", fg="#333").pack(side=tk.LEFT, padx=(0, 20))
         
         self.sort_var = tk.StringVar(value="credibility")
-        tk.Radiobutton(options_frame, text="Credibility ▼", variable=self.sort_var, value="credibility", 
-                      command=lambda: self.sort_articles("credibility"), bg="#f5f5f5", font=("Segoe UI", 9)).pack(side=tk.LEFT, padx=10)
-        tk.Radiobutton(options_frame, text="Latest", variable=self.sort_var, value="date",
-                      command=lambda: self.sort_articles("date"), bg="#f5f5f5", font=("Segoe UI", 9)).pack(side=tk.LEFT, padx=10)
-        tk.Radiobutton(options_frame, text="Sentiment", variable=self.sort_var, value="sentiment",
-                      command=lambda: self.sort_articles("sentiment"), bg="#f5f5f5", font=("Segoe UI", 9)).pack(side=tk.LEFT, padx=10)
+        for text, value in [("Credibility", "credibility"), ("Latest", "date"), ("Sentiment", "sentiment")]:
+            tk.Radiobutton(inner_options, text=text, variable=self.sort_var, value=value, 
+                          command=lambda v=value: self.sort_articles(v), bg="white", font=("Georgia", 10), 
+                          fg="#333", activebackground="white").pack(side=tk.LEFT, padx=(0, 25))
         
-        # Articles frame (scrollable)
-        articles_frame = tk.Frame(self.root, bg="#f5f5f5")
-        articles_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
+        # Articles frame (scrollable) - Magazine-style
+        articles_frame = tk.Frame(self.root, bg="white")
+        articles_frame.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
         
         # Canvas with scrollbar
-        canvas = tk.Canvas(articles_frame, bg="#f5f5f5", highlightthickness=0)
+        canvas = tk.Canvas(articles_frame, bg="white", highlightthickness=0, bd=0)
         scrollbar = ttk.Scrollbar(articles_frame, orient="vertical", command=canvas.yview)
-        scrollable_frame = tk.Frame(canvas, bg="#f5f5f5")
+        scrollable_frame = tk.Frame(canvas, bg="white")
         
         scrollable_frame.bind(
             "<Configure>",
@@ -275,9 +254,9 @@ class NewsAnalyzerApp:
         
         self.articles_container = scrollable_frame
         
-        # Status bar
+        # Status bar - Minimal
         self.status_label = tk.Label(self.root, text="Ready. Enter a search term to begin.", 
-                                     bg="#2a2a2a", fg="#00d4ff", font=("Segoe UI", 9), anchor="w", padx=10)
+                                     bg="white", fg="#666", font=("Georgia", 9), anchor="w", padx=50, pady=8)
         self.status_label.pack(fill=tk.X, padx=0, pady=0)
     
     def search_news(self):
@@ -318,12 +297,11 @@ class NewsAnalyzerApp:
             
             url = article.get("url", "")
             published = article.get("publishedAt", "N/A")[:10]
-            image = article.get("urlToImage", "")
             
             credibility, color = get_credibility_score(source, full_content)
             sentiment = get_sentiment(full_content)
             
-            summary = clean_summary(description, max_length=180)
+            summary = description[:180] if description else "No summary available"
             
             self.articles.append({
                 "title": title,
@@ -333,7 +311,6 @@ class NewsAnalyzerApp:
                 "sentiment": sentiment,
                 "summary": summary,
                 "url": url,
-                "image": image,
                 "published": published
             })
         
@@ -355,99 +332,85 @@ class NewsAnalyzerApp:
         self.display_articles()
         self.status_label.config(text=f"✓ Sorted by {sort_by.capitalize()}")
     
-    def load_image_async(self, card_frame, url, width=250, height=150):
-        """Load image from URL asynchronously"""
-        def fetch_and_display():
-            try:
-                response = requests.get(url, timeout=5)
-                if response.status_code == 200:
-                    img_data = Image.open(BytesIO(response.content))
-                    img_data.thumbnail((width, height), Image.Resampling.LANCZOS)
-                    
-                    # Convert to PhotoImage
-                    photo = ImageTk.PhotoImage(img_data)
-                    
-                    # Create image label
-                    img_label = tk.Label(card_frame, image=photo, bg="white")
-                    img_label.image = photo  # Keep a reference
-                    img_label.pack(fill=tk.X, padx=0, pady=0)
-            except:
-                pass  # Silently fail if image can't be loaded
-        
-        threading.Thread(target=fetch_and_display, daemon=True).start()
-
     def display_articles(self):
-        """Display articles with professional styling and thumbnails"""
+        """Display articles with New York Times-style design"""
+        # Clear previous articles
         for widget in self.articles_container.winfo_children():
             widget.destroy()
         
         if not self.articles:
             no_results = tk.Label(self.articles_container, text="No articles to display", 
-                                 font=("Segoe UI", 12), bg="#f5f5f5", fg="#999")
-            no_results.pack(pady=40)
+                                 font=("Georgia", 14), bg="white", fg="#999")
+            no_results.pack(pady=80)
             return
         
+        # Main articles container with padding
+        main_container = tk.Frame(self.articles_container, bg="white")
+        main_container.pack(fill=tk.BOTH, expand=True, padx=50, pady=30)
+        
         for idx, article in enumerate(self.articles, 1):
-            card_frame = tk.Frame(self.articles_container, bg="white", relief=tk.FLAT, bd=1)
-            card_frame.pack(fill=tk.X, padx=5, pady=8)
+            # Article card
+            card_frame = tk.Frame(main_container, bg="white", relief=tk.FLAT)
+            card_frame.pack(fill=tk.X, pady=(0, 40))
             
-            # Left accent bar (color coded by credibility score)
+            # Left accent bar based on credibility
             accent_color = article["color"]
-            cred = article["credibility"]
+            accent_frame = tk.Frame(card_frame, bg=accent_color, width=3)
+            accent_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 15))
             
-            accent_frame = tk.Frame(card_frame, bg=accent_color, width=4)
-            accent_frame.pack(side=tk.LEFT, fill=tk.Y)
-            
+            # Main content area
             content_frame = tk.Frame(card_frame, bg="white")
-            content_frame.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
+            content_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
             
-            # Load and display thumbnail asynchronously if available
-            image_url = article.get("image") or article.get("urlToImage")
-            if image_url:
-                self.load_image_async(content_frame, image_url, width=600, height=180)
+            # Credibility badge at top right
+            badge_frame = tk.Frame(content_frame, bg="white")
+            badge_frame.pack(fill=tk.X, pady=(0, 8))
             
-            # Text content frame
-            text_frame = tk.Frame(content_frame, bg="white")
-            text_frame.pack(fill=tk.BOTH, expand=True, padx=12, pady=10)
+            cred = article["credibility"]
+            cred_badge = tk.Label(badge_frame, text=f"{cred}% CREDIBLE", 
+                                 font=("Georgia", 9, "bold"), bg="white", fg=accent_color)
+            cred_badge.pack(anchor="e")
             
-            # Title
-            title_label = tk.Label(text_frame, text=f"{idx}. {article['title']}", 
-                                  font=("Segoe UI", 12, "bold"), bg="white", wraplength=1200, justify=tk.LEFT)
-            title_label.pack(anchor="w", pady=(0, 8))
+            # Title - Large and prominent (NYT style)
+            title_label = tk.Label(content_frame, text=article['title'], 
+                                  font=("Georgia", 16, "bold"), bg="white", fg="#000",
+                                  wraplength=900, justify=tk.LEFT)
+            title_label.pack(anchor="w", pady=(0, 10))
             
-            # Source and date row
-            meta_frame = tk.Frame(text_frame, bg="white")
-            meta_frame.pack(fill=tk.X, pady=(0, 8))
+            # Meta information (source, date, sentiment)
+            meta_frame = tk.Frame(content_frame, bg="white")
+            meta_frame.pack(fill=tk.X, pady=(0, 12))
             
-            source_label = tk.Label(meta_frame, text=f"📰 {article['source']}", 
-                                   font=("Segoe UI", 9), fg="#555", bg="white")
+            source_label = tk.Label(meta_frame, text=article['source'].upper(), 
+                                   font=("Georgia", 9, "bold"), fg="#333", bg="white")
             source_label.pack(side=tk.LEFT, padx=(0, 15))
             
-            date_label = tk.Label(meta_frame, text=f"📅 {article['published']}", 
-                                 font=("Segoe UI", 9), fg="#555", bg="white")
+            date_label = tk.Label(meta_frame, text=article['published'], 
+                                 font=("Georgia", 9), fg="#666", bg="white")
             date_label.pack(side=tk.LEFT, padx=(0, 15))
             
             sentiment_label = tk.Label(meta_frame, text=article["sentiment"], 
-                                      font=("Segoe UI", 9), bg="white")
+                                      font=("Georgia", 9), bg="white")
             sentiment_label.pack(side=tk.LEFT)
             
-            # Credibility score (prominent)
-            cred_text = f"CREDIBILITY: {cred}%"
-            cred_label = tk.Label(meta_frame, text=cred_text, 
-                                 font=("Segoe UI", 10, "bold"), fg=accent_color, bg="white")
-            cred_label.pack(side=tk.RIGHT, padx=(10, 0))
+            # Summary - Article excerpt style
+            summary_label = tk.Label(content_frame, text=article["summary"], 
+                                    font=("Georgia", 11), bg="white", fg="#333",
+                                    wraplength=900, justify=tk.LEFT, pady=3)
+            summary_label.pack(fill=tk.X, pady=(0, 12))
             
-            # Summary
-            summary_label = tk.Label(text_frame, text=article["summary"], 
-                                    font=("Segoe UI", 9), bg="white", wraplength=1200, justify=tk.LEFT, fg="#333")
-            summary_label.pack(fill=tk.X, pady=(0, 8))
-            
-            # Read button
-            link_button = tk.Button(text_frame, text="→ Read Full Article", 
+            # Read button - Subtle
+            link_button = tk.Button(content_frame, text="READ FULL ARTICLE →", 
                                    command=lambda url=article["url"]: webbrowser.open(url),
-                                   bg=accent_color, fg="white", font=("Segoe UI", 9, "bold"), 
-                                   padx=15, pady=5, relief=tk.FLAT, cursor="hand2")
+                                   bg=accent_color, fg="white", font=("Georgia", 9, "bold"), 
+                                   padx=15, pady=6, relief=tk.FLAT, cursor="hand2", 
+                                   activebackground="#000", activeforeground="white")
             link_button.pack(anchor="w")
+            
+            # Divider line between articles
+            if idx < len(self.articles):
+                divider = tk.Frame(main_container, bg="#e0e0e0", height=1)
+                divider.pack(fill=tk.X, pady=(30, 0))
 
 def main():
     """Main entry point"""
