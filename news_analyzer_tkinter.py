@@ -170,9 +170,9 @@ def fetch_news(query, days=7):
 class NewsAnalyzerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("The News Analyzer - Credibility Scoring & Fact-Based Journalism")
-        self.root.geometry("1200x900")
-        self.root.configure(bg="white")
+        self.root.title("News Analyzer | AI-Powered Credibility Intelligence")
+        self.root.geometry("1400x950")
+        self.root.configure(bg="#0a0f1e")
         
         self.articles = []
         self.current_sort = "credibility"
@@ -180,66 +180,85 @@ class NewsAnalyzerApp:
         self.setup_ui()
     
     def setup_ui(self):
-        """Setup the professional user interface - NYT style"""
+        """Setup modern, futuristic 2026 UI design"""
         
-        # Header - Clean and minimal like NYT
-        header_frame = tk.Frame(self.root, bg="white", height=80)
+        # Header - Modern dark gradient effect
+        header_frame = tk.Frame(self.root, bg="#0f1729", height=100)
         header_frame.pack(fill=tk.X, padx=0, pady=0)
         header_frame.pack_propagate(False)
         
-        title_label = tk.Label(header_frame, text="THE NEWS ANALYZER", 
-                              font=("Georgia", 28, "bold"), bg="white", fg="#000")
-        title_label.pack(pady=(15, 3))
+        # Accent line
+        accent_top = tk.Frame(header_frame, bg="", height=3)
+        accent_top.pack(fill=tk.X)
+        # Create gradient effect with colored frame
+        accent_top.configure(bg="#00d9ff")
         
-        divider = tk.Frame(header_frame, bg="#000", height=2)
-        divider.pack(fill=tk.X, padx=50)
+        title_label = tk.Label(header_frame, text="◆ NEWS ANALYZER ◆", 
+                              font=("Helvetica", 26, "bold"), bg="#0f1729", fg="#00d9ff")
+        title_label.pack(pady=(12, 3))
         
-        subtitle = tk.Label(header_frame, text="Independent Analysis • Credibility Scoring • Real-Time Journalism", 
-                           font=("Georgia", 9), bg="white", fg="#666")
-        subtitle.pack(pady=(5, 0))
+        subtitle = tk.Label(header_frame, text="AI-POWERED CREDIBILITY INTELLIGENCE | REAL-TIME ANALYSIS", 
+                           font=("Helvetica", 9), bg="#0f1729", fg="#00ff88")
+        subtitle.pack()
         
-        # Search Frame - Elegant
-        search_frame = tk.Frame(self.root, bg="white", height=70)
+        # Search Frame - Modern glassmorphism effect
+        search_frame = tk.Frame(self.root, bg="#0a0f1e", height=90)
         search_frame.pack(fill=tk.X, padx=0, pady=0)
         search_frame.pack_propagate(False)
         
-        inner_search = tk.Frame(search_frame, bg="white")
-        inner_search.pack(fill=tk.X, padx=50, pady=15)
+        inner_search = tk.Frame(search_frame, bg="#0a0f1e")
+        inner_search.pack(fill=tk.X, padx=40, pady=15)
         
-        tk.Label(inner_search, text="Search:", font=("Georgia", 11, "bold"), bg="white", fg="#000").pack(side=tk.LEFT, padx=(0, 10))
+        tk.Label(inner_search, text="🔍 SEARCH NEWS:", font=("Helvetica", 11, "bold"), 
+                bg="#0a0f1e", fg="#00d9ff").pack(side=tk.LEFT, padx=(0, 15))
         
-        self.search_entry = tk.Entry(inner_search, font=("Georgia", 12), width=40, relief=tk.FLAT, bg="#f5f5f5", 
-                                     bd=0, highlightthickness=1, highlightbackground="#ddd", highlightcolor="#999")
-        self.search_entry.pack(side=tk.LEFT, padx=(0, 10), ipady=6)
+        self.search_entry = tk.Entry(inner_search, font=("Helvetica", 12), width=40, relief=tk.FLAT, 
+                                     bg="#1a2332", fg="#00ff88", bd=0, highlightthickness=2, 
+                                     highlightbackground="#00d9ff", highlightcolor="#00d9ff", insertbackground="#00d9ff")
+        self.search_entry.pack(side=tk.LEFT, padx=(0, 15), ipady=8)
         self.search_entry.insert(0, "Technology")
         
-        tk.Button(inner_search, text="SEARCH", command=self.search_news, 
-                 bg="#000", fg="white", font=("Georgia", 11, "bold"), padx=20, pady=5, relief=tk.FLAT, cursor="hand2").pack(side=tk.LEFT)
+        search_btn = tk.Button(inner_search, text="❯ ANALYZE", command=self.search_news, 
+                              bg="#00d9ff", fg="#000", font=("Helvetica", 11, "bold"), 
+                              padx=25, pady=7, relief=tk.FLAT, cursor="hand2", 
+                              activebackground="#00ff88", activeforeground="#000")
+        search_btn.pack(side=tk.LEFT)
         
-        # Options frame - Subtle
-        options_frame = tk.Frame(self.root, bg="white", height=50)
+        # Options frame - Modern controls
+        options_frame = tk.Frame(self.root, bg="#0a0f1e", height=60)
         options_frame.pack(fill=tk.X, padx=0, pady=0)
         options_frame.pack_propagate(False)
         
-        inner_options = tk.Frame(options_frame, bg="white")
-        inner_options.pack(fill=tk.X, padx=50, pady=10)
+        inner_options = tk.Frame(options_frame, bg="#0a0f1e")
+        inner_options.pack(fill=tk.X, padx=40, pady=12)
         
-        tk.Label(inner_options, text="Sort by:", font=("Georgia", 10), bg="white", fg="#333").pack(side=tk.LEFT, padx=(0, 20))
+        tk.Label(inner_options, text="SORT BY:", font=("Helvetica", 10, "bold"), 
+                bg="#0a0f1e", fg="#00d9ff").pack(side=tk.LEFT, padx=(0, 20))
         
         self.sort_var = tk.StringVar(value="credibility")
-        for text, value in [("Credibility", "credibility"), ("Latest", "date"), ("Sentiment", "sentiment")]:
-            tk.Radiobutton(inner_options, text=text, variable=self.sort_var, value=value, 
-                          command=lambda v=value: self.sort_articles(v), bg="white", font=("Georgia", 10), 
-                          fg="#333", activebackground="white").pack(side=tk.LEFT, padx=(0, 25))
+        sort_options = [("⚡ CREDIBILITY", "credibility"), ("⏰ LATEST", "date"), ("💭 SENTIMENT", "sentiment")]
         
-        # Articles frame (scrollable) - Magazine-style
-        articles_frame = tk.Frame(self.root, bg="white")
+        for text, value in sort_options:
+            rb = tk.Radiobutton(inner_options, text=text, variable=self.sort_var, value=value, 
+                               command=lambda v=value: self.sort_articles(v), bg="#0a0f1e", 
+                               font=("Helvetica", 10), fg="#00ff88", activebackground="#0a0f1e",
+                               activeforeground="#00d9ff", selectcolor="#0a0f1e")
+            rb.pack(side=tk.LEFT, padx=(0, 25))
+        
+        # Articles frame (scrollable)
+        articles_frame = tk.Frame(self.root, bg="#0a0f1e")
         articles_frame.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
         
-        # Canvas with scrollbar
-        canvas = tk.Canvas(articles_frame, bg="white", highlightthickness=0, bd=0)
-        scrollbar = ttk.Scrollbar(articles_frame, orient="vertical", command=canvas.yview)
-        scrollable_frame = tk.Frame(canvas, bg="white")
+        # Modern scrollbar styling
+        canvas = tk.Canvas(articles_frame, bg="#0a0f1e", highlightthickness=0, bd=0)
+        
+        # Custom scrollbar style
+        scrollbar_style = ttk.Style()
+        scrollbar_style.theme_use('clam')
+        scrollbar_style.configure('Vertical.TScrollbar', background="#1a2332", troughcolor="#0a0f1e")
+        
+        scrollbar = ttk.Scrollbar(articles_frame, orient="vertical", command=canvas.yview, style='Vertical.TScrollbar')
+        scrollable_frame = tk.Frame(canvas, bg="#0a0f1e")
         
         scrollable_frame.bind(
             "<Configure>",
@@ -250,14 +269,18 @@ class NewsAnalyzerApp:
         canvas.configure(yscrollcommand=scrollbar.set)
         
         canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
+        scrollbar.pack(side="right", fill="y", padx=(0, 5))
         
         self.articles_container = scrollable_frame
         
-        # Status bar - Minimal
-        self.status_label = tk.Label(self.root, text="Ready. Enter a search term to begin.", 
-                                     bg="white", fg="#666", font=("Georgia", 9), anchor="w", padx=50, pady=8)
-        self.status_label.pack(fill=tk.X, padx=0, pady=0)
+        # Status bar - Futuristic
+        status_frame = tk.Frame(self.root, bg="#0f1729", height=40)
+        status_frame.pack(fill=tk.X, padx=0, pady=0)
+        status_frame.pack_propagate(False)
+        
+        self.status_label = tk.Label(status_frame, text="▸ Ready. Enter a search term to begin.", 
+                                     bg="#0f1729", fg="#00ff88", font=("Helvetica", 9), anchor="w", padx=40, pady=8)
+        self.status_label.pack(fill=tk.X)
     
     def search_news(self):
         """Search for news articles"""
@@ -266,7 +289,7 @@ class NewsAnalyzerApp:
             messagebox.showwarning("Input Required", "Please enter a search term")
             return
         
-        self.status_label.config(text="🔄 Searching for articles...")
+        self.status_label.config(text="▸ ◆ SEARCHING FOR ARTICLES... ◆")
         self.root.update()
         
         thread = threading.Thread(target=self._perform_search, args=(query,))
@@ -279,12 +302,12 @@ class NewsAnalyzerApp:
         
         if error:
             self.root.after(0, lambda: messagebox.showerror("Error", error))
-            self.status_label.config(text="⚠️ Error fetching news")
+            self.status_label.config(text="▸ ⚠️  ERROR FETCHING NEWS")
             return
         
         if not articles:
             self.root.after(0, lambda: messagebox.showinfo("No Results", "No articles found for this topic"))
-            self.status_label.config(text="No articles found")
+            self.status_label.config(text="▸ NO ARTICLES FOUND")
             return
         
         self.articles = []
@@ -318,99 +341,100 @@ class NewsAnalyzerApp:
         self.articles.sort(key=lambda x: x["credibility"], reverse=True)
         
         self.root.after(0, self.display_articles)
-        self.root.after(0, lambda: self.status_label.config(text=f"✓ Found {len(self.articles)} articles. Sorted by credibility."))
+        self.root.after(0, lambda: self.status_label.config(text=f"▸ ANALYSIS COMPLETE: {len(self.articles)} ARTICLES LOADED | CREDIBILITY SORTED"))
     
     def sort_articles(self, sort_by):
         """Sort articles"""
         if sort_by == "credibility":
             self.articles.sort(key=lambda x: x["credibility"], reverse=True)
+            self.status_label.config(text="▸ ARTICLES SORTED BY CREDIBILITY")
         elif sort_by == "sentiment":
             self.articles.sort(key=lambda x: x["sentiment"])
+            self.status_label.config(text="▸ ARTICLES SORTED BY SENTIMENT")
         else:  # date
             self.articles.sort(key=lambda x: x["published"], reverse=True)
+            self.status_label.config(text="▸ ARTICLES SORTED BY DATE")
         
         self.display_articles()
-        self.status_label.config(text=f"✓ Sorted by {sort_by.capitalize()}")
     
     def display_articles(self):
-        """Display articles with New York Times-style design"""
+        """Display articles with modern, futuristic 2026 design"""
         # Clear previous articles
         for widget in self.articles_container.winfo_children():
             widget.destroy()
         
         if not self.articles:
-            no_results = tk.Label(self.articles_container, text="No articles to display", 
-                                 font=("Georgia", 14), bg="white", fg="#999")
-            no_results.pack(pady=80)
+            no_results = tk.Label(self.articles_container, text="◆ NO ARTICLES FOUND ◆", 
+                                 font=("Helvetica", 16, "bold"), bg="#0a0f1e", fg="#00d9ff")
+            no_results.pack(pady=120)
             return
         
-        # Main articles container with padding
-        main_container = tk.Frame(self.articles_container, bg="white")
-        main_container.pack(fill=tk.BOTH, expand=True, padx=50, pady=30)
+        # Main articles container with modern spacing
+        main_container = tk.Frame(self.articles_container, bg="#0a0f1e")
+        main_container.pack(fill=tk.BOTH, expand=True, padx=35, pady=25)
         
         for idx, article in enumerate(self.articles, 1):
-            # Article card
-            card_frame = tk.Frame(main_container, bg="white", relief=tk.FLAT)
-            card_frame.pack(fill=tk.X, pady=(0, 40))
+            # Modern card with gradient border effect
+            card_frame = tk.Frame(main_container, bg="#0a0f1e")
+            card_frame.pack(fill=tk.X, pady=(0, 28))
             
-            # Left accent bar based on credibility
-            accent_color = article["color"]
-            accent_frame = tk.Frame(card_frame, bg=accent_color, width=3)
-            accent_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 15))
+            # Outer border frame for gradient effect (simulated with colored frame)
+            border_frame = tk.Frame(card_frame, bg=article["color"], height=1)
+            border_frame.pack(fill=tk.X, pady=(0, 0))
+            border_frame.pack_propagate(False)
             
-            # Main content area
-            content_frame = tk.Frame(card_frame, bg="white")
-            content_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+            # Main card content
+            content_frame = tk.Frame(card_frame, bg="#1a2332", relief=tk.FLAT, bd=0, padx=1, pady=1)
+            content_frame.pack(fill=tk.BOTH, expand=True)
             
-            # Credibility badge at top right
-            badge_frame = tk.Frame(content_frame, bg="white")
-            badge_frame.pack(fill=tk.X, pady=(0, 8))
+            # Inner content with padding
+            inner_frame = tk.Frame(content_frame, bg="#0f1729")
+            inner_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=18)
+            
+            # Top row: Credibility badge + metadata
+            top_row = tk.Frame(inner_frame, bg="#0f1729")
+            top_row.pack(fill=tk.X, pady=(0, 12))
             
             cred = article["credibility"]
-            cred_badge = tk.Label(badge_frame, text=f"{cred}% CREDIBLE", 
-                                 font=("Georgia", 9, "bold"), bg="white", fg=accent_color)
-            cred_badge.pack(anchor="e")
+            cred_badge = tk.Label(top_row, text=f"◆ {cred}% CREDIBLE ◆", 
+                                 font=("Helvetica", 10, "bold"), bg="#0f1729", fg=article["color"])
+            cred_badge.pack(anchor="e", pady=(0, 4))
             
-            # Title - Large and prominent (NYT style)
-            title_label = tk.Label(content_frame, text=article['title'], 
-                                  font=("Georgia", 16, "bold"), bg="white", fg="#000",
-                                  wraplength=900, justify=tk.LEFT)
-            title_label.pack(anchor="w", pady=(0, 10))
-            
-            # Meta information (source, date, sentiment)
-            meta_frame = tk.Frame(content_frame, bg="white")
+            # Meta info
+            meta_frame = tk.Frame(inner_frame, bg="#0f1729")
             meta_frame.pack(fill=tk.X, pady=(0, 12))
             
-            source_label = tk.Label(meta_frame, text=article['source'].upper(), 
-                                   font=("Georgia", 9, "bold"), fg="#333", bg="white")
-            source_label.pack(side=tk.LEFT, padx=(0, 15))
+            source_label = tk.Label(meta_frame, text=f"SOURCE: {article['source'].upper()}", 
+                                   font=("Helvetica", 9, "bold"), fg="#00ff88", bg="#0f1729")
+            source_label.pack(side=tk.LEFT, padx=(0, 20))
             
-            date_label = tk.Label(meta_frame, text=article['published'], 
-                                 font=("Georgia", 9), fg="#666", bg="white")
-            date_label.pack(side=tk.LEFT, padx=(0, 15))
+            date_label = tk.Label(meta_frame, text=f"DATE: {article['published']}", 
+                                 font=("Helvetica", 9), fg="#00d9ff", bg="#0f1729")
+            date_label.pack(side=tk.LEFT, padx=(0, 20))
             
-            sentiment_label = tk.Label(meta_frame, text=article["sentiment"], 
-                                      font=("Georgia", 9), bg="white")
+            sentiment_label = tk.Label(meta_frame, text=f"MOOD: {article['sentiment']}", 
+                                      font=("Helvetica", 9), fg="#ff00ff", bg="#0f1729")
             sentiment_label.pack(side=tk.LEFT)
             
-            # Summary - Article excerpt style
-            summary_label = tk.Label(content_frame, text=article["summary"], 
-                                    font=("Georgia", 11), bg="white", fg="#333",
-                                    wraplength=900, justify=tk.LEFT, pady=3)
-            summary_label.pack(fill=tk.X, pady=(0, 12))
+            # Title - Bold and prominent
+            title_label = tk.Label(inner_frame, text=article['title'], 
+                                  font=("Helvetica", 13, "bold"), bg="#0f1729", fg="#ffffff",
+                                  wraplength=1100, justify=tk.LEFT)
+            title_label.pack(anchor="w", pady=(0, 14))
             
-            # Read button - Subtle
-            link_button = tk.Button(content_frame, text="READ FULL ARTICLE →", 
+            # Summary - Clean text
+            summary_label = tk.Label(inner_frame, text=article["summary"], 
+                                    font=("Helvetica", 10), bg="#0f1729", fg="#b0b8c8",
+                                    wraplength=1100, justify=tk.LEFT)
+            summary_label.pack(fill=tk.X, pady=(0, 16))
+            
+            # Action button - Modern
+            link_button = tk.Button(inner_frame, text="► READ ARTICLE", 
                                    command=lambda url=article["url"]: webbrowser.open(url),
-                                   bg=accent_color, fg="white", font=("Georgia", 9, "bold"), 
-                                   padx=15, pady=6, relief=tk.FLAT, cursor="hand2", 
-                                   activebackground="#000", activeforeground="white")
+                                   bg=article["color"], fg="#000", font=("Helvetica", 10, "bold"), 
+                                   padx=18, pady=7, relief=tk.FLAT, cursor="hand2", 
+                                   activebackground="#00ff88", activeforeground="#000")
             link_button.pack(anchor="w")
-            
-            # Divider line between articles
-            if idx < len(self.articles):
-                divider = tk.Frame(main_container, bg="#e0e0e0", height=1)
-                divider.pack(fill=tk.X, pady=(30, 0))
 
 def main():
     """Main entry point"""
