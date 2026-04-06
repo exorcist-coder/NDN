@@ -12,7 +12,7 @@ load_dotenv()
 
 # Set page config
 st.set_page_config(
-    page_title="📰 Professional News Analyzer",
+    page_title="📰 News Analyzer",
     page_icon="📰",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -145,13 +145,36 @@ def analyze_content_quality(content):
     
     return max(-20, min(20, score_adjustment))
 
+def get_color_by_score(score):
+    """Get color gradient based on credibility score (red to green)"""
+    score = max(0, min(100, score))  # Ensure between 0-100
+    
+    if score < 20:
+        return "#dc3545"  # Dark red
+    elif score < 40:
+        return "#ff6b6b"  # Red
+    elif score < 50:
+        return "#ff9800"  # Orange
+    elif score < 60:
+        return "#ffc107"  # Yellow
+    elif score < 75:
+        return "#58b368"  # Light green
+    elif score < 90:
+        return "#28a745"  # Green
+    else:
+        return "#1e7e34"  # Dark green
+
 def get_credibility_score(source, content):
     """Professional credibility scoring"""
-    tier, base_score, color = get_source_tier(source)
+    tier, base_score, _ = get_source_tier(source)
     content_adjustment = analyze_content_quality(content)
     
     final_score = base_score + content_adjustment
-    return max(0, min(100, final_score)), color
+    final_score = max(0, min(100, final_score))
+    
+    # Get color based on final score, not source tier
+    color = get_color_by_score(final_score)
+    return final_score, color
 
 def get_sentiment(text):
     """Analyze sentiment of text"""
@@ -311,7 +334,7 @@ def display_article_card(article):
 # MAIN APP
 # =====================
 
-st.markdown('<h1 class="main-header">📰 PROFESSIONAL NEWS ANALYZER</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">📰 NEWS ANALYZER</h1>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Real-time Credibility Scoring | Sentiment Analysis | AI Summaries | Fact-Based Journalism</p>', unsafe_allow_html=True)
 
 col1, col2 = st.columns([2, 1])

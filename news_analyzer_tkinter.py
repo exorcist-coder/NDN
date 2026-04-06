@@ -92,13 +92,36 @@ def analyze_content_quality(content):
     
     return max(-20, min(20, score_adjustment))
 
+def get_color_by_score(score):
+    """Get color gradient based on credibility score (red to green)"""
+    score = max(0, min(100, score))  # Ensure between 0-100
+    
+    if score < 20:
+        return "#dc3545"  # Dark red
+    elif score < 40:
+        return "#ff6b6b"  # Red
+    elif score < 50:
+        return "#ff9800"  # Orange
+    elif score < 60:
+        return "#ffc107"  # Yellow
+    elif score < 75:
+        return "#58b368"  # Light green
+    elif score < 90:
+        return "#28a745"  # Green
+    else:
+        return "#1e7e34"  # Dark green
+
 def get_credibility_score(source, content):
     """Professional credibility scoring"""
     tier, base_score = get_source_tier(source)
     content_adjustment = analyze_content_quality(content)
     
     final_score = base_score + content_adjustment
-    return max(0, min(100, final_score))
+    final_score = max(0, min(100, final_score))
+    
+    # Get color based on final score
+    color = get_color_by_score(final_score)
+    return final_score, color
 
 def get_sentiment(text):
     """Analyze sentiment of text"""
@@ -107,9 +130,9 @@ def get_sentiment(text):
         polarity = blob.sentiment.polarity
         
         if polarity > 0.1:
-            return "Positive 😊"
+            return "Positive 😊✅"
         elif polarity < -0.1:
-            return "Negative 😢"
+            return "Negative 😡❌"
         else:
             return "Neutral 😐"
     except:
@@ -147,7 +170,7 @@ def fetch_news(query, days=7):
 class NewsAnalyzerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("📰 Professional News Analyzer & Credibility Detector")
+        self.root.title("📰 News Analyzer & Credibility Detector")
         self.root.geometry("1400x850")
         self.root.configure(bg="#f5f5f5")
         
@@ -163,7 +186,7 @@ class NewsAnalyzerApp:
         header_frame = tk.Frame(self.root, bg="#1a1a1a", height=70)
         header_frame.pack(fill=tk.X, padx=0, pady=0)
         
-        title_label = tk.Label(header_frame, text="📰 PROFESSIONAL NEWS ANALYZER", 
+        title_label = tk.Label(header_frame, text="📰 NEWS ANALYZER", 
                               font=("Segoe UI", 22, "bold"), bg="#1a1a1a", fg="#00d4ff")
         title_label.pack(pady=10)
         
@@ -264,7 +287,7 @@ class NewsAnalyzerApp:
             url = article.get("url", "")
             published = article.get("publishedAt", "N/A")[:10]
             
-            credibility = get_credibility_score(source, full_content)
+            credibility, color = get_credibility_score(source, full_content)
             sentiment = get_sentiment(full_content)
             
             summary = description[:180] if description else "No summary available"
@@ -273,6 +296,7 @@ class NewsAnalyzerApp:
                 "title": title,
                 "source": source,
                 "credibility": credibility,
+                "color": color,
                 "sentiment": sentiment,
                 "summary": summary,
                 "url": url,
@@ -312,16 +336,8 @@ class NewsAnalyzerApp:
             card_frame = tk.Frame(self.articles_container, bg="white", relief=tk.FLAT, bd=1)
             card_frame.pack(fill=tk.X, padx=5, pady=8)
             
-            # Left accent bar (color coded by credibility)
-            cred = article["credibility"]
-            if cred >= 85:
-                accent_color = "#28a745"  # Green
-            elif cred >= 70:
-                accent_color = "#ffc107"  # Yellow
-            elif cred >= 50:
-                accent_color = "#ff9800"  # Orange
-            else:
-                accent_color = "#dc3545"  # Red
+            # Left accent bar (color coded by credibility score)
+            accent_color = article["color"]
             
             accent_frame = tk.Frame(card_frame, bg=accent_color, width=4)
             accent_frame.pack(side=tk.LEFT, fill=tk.Y)
