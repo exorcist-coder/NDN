@@ -1,52 +1,104 @@
 import tkinter as tk
-from tkinter import ttk, scrolledtext, messagebox
+from tkinter import ttk, messagebox
 import threading
 import requests
 from datetime import datetime, timedelta
-import google.generativeai as genai
 from textblob import TextBlob
 import os
 from dotenv import load_dotenv
 import webbrowser
+import re
 
 # Load environment variables
 load_dotenv()
 
 # Configure APIs
 NEWSAPI_KEY = os.getenv("NEWSAPI_KEY", "")
-GEMINI_KEY = os.getenv("GEMINI_KEY", "")
 
-if GEMINI_KEY:
-    genai.configure(api_key=GEMINI_KEY)
-
-# Credibility database of known sources
-CREDIBILITY_SCORES = {
-    "bbc": 95, "reuters": 94, "ap news": 93, "cnn": 85, "bbc news": 95,
-    "guardian": 88, "new york times": 87, "nyt": 87, "washington post": 86,
-    "financial times": 85, "the times": 84, "independent": 82, "telegraph": 80,
-    "politico": 78, "cnbc": 80, "business insider": 75, "medium": 40,
-    "twitter": 35, "reddit": 30, "unknown": 65
+# Comprehensive credibility database with tier system
+TIER_1_SOURCES = {  # Tier 1: Major reputable sources (90-95%)
+    "bbc", "bbc news", "reuters", "ap news", "associated press", 
+    "guardian", "new york times", "nyt", "washington post", 
+    "financial times", "the times", "the telegraph", "telegraph", 
+    "economist", "nikkei asia", "ft", "wsj", "wall street journal",
+    "bbc world", "cnn international"
 }
 
-def get_credibility_score(source, content):
-    """Calculate credibility score based on source and content"""
-    source_lower = source.lower()
-    base_score = CREDIBILITY_SCORES.get("unknown", 65)
+TIER_2_SOURCES = {  # Tier 2: Quality sources (75-85%)
+    "cnn", "bbc america", "cnbc", "politico", "politico pro",
+    "bloomberg", "reuters news", "vox", "the verge", "techcrunch",
+    "wired", "slate", "the atlantic", "time", "newsweek",
+    "independent", "the independent", "open democracy"
+}
+
+TIER_3_SOURCES = {  # Tier 3: Moderate sources (60-74%)
+    "medium", "forbes", "entrepreneur", "business insider",
+    "huffpost", "huff post", "mashable", "polygon", "variety",
+    "hollywood reporter", "deadline", "tvline"
+}
+
+UNRELIABLE_SOURCES = {  # Unreliable (below 50%)
+    "twitter", "x", "reddit", "4chan", "tiktok", "instagram"
+}
+
+def get_source_tier(source_name):
+    """Determine source credibility tier"""
+    source_lower = source_name.lower().strip()
     
-    for known_source, score in CREDIBILITY_SCORES.items():
-        if known_source in source_lower:
-            base_score = score
-            break
+    if any(tier1 in source_lower for tier1 in TIER_1_SOURCES):
+        return "tier1", 93
+    elif any(tier2 in source_lower for tier2 in TIER_2_SOURCES):
+        return "tier2", 78
+    elif any(tier3 in source_lower for tier3 in TIER_3_SOURCES):
+        return "tier3", 65
+    elif any(unreliable in source_lower for unreliable in UNRELIABLE_SOURCES):
+        return "unreliable", 35
+    else:
+        return "unknown", 55
+
+def analyze_content_quality(content):
+    """Analyze content for quality indicators"""
+    if not content or len(content) < 50:
+        return -15  # Very short content is suspicious
     
+    score_adjustment = 0
+    
+    # Check for proper sentence structure and length
+    sentences = [s for s in content.split('.') if len(s.strip()) > 10]
+    if len(sentences) < 2:
+        score_adjustment -= 10  # Too few sentences
+    elif len(sentences) > 15:
+        score_adjustment += 5  # Well-detailed content
+    
+    # Check for quoted sources
+    if '"' in content or "'" in content:
+        score_adjustment += 5  # Has quotes/sources
+    
+    # Check for sensationalism
+    sensational_words = ["shocking", "unbelievable", "you won't believe", 
+                        "doctors hate", "secret", "exposed", "scandal"]
+    sensational_count = sum(1 for word in sensational_words if word.lower() in content.lower())
+    score_adjustment -= sensational_count * 3
+    
+    # Check for excessive caps
+    caps_words = len([w for w in content.split() if w.isupper() and len(w) > 2])
+    if caps_words > 5:
+        score_adjustment -= 5
+    
+    # Check for excessive exclamation marks
     exclamation_count = content.count("!")
-    caps_words = len([w for w in content.split() if w.isupper() and len(w) > 1])
+    if exclamation_count > 3:
+        score_adjustment -= 3
     
-    if exclamation_count > 5:
-        base_score -= 5
-    if caps_words > 10:
-        base_score -= 3
+    return max(-20, min(20, score_adjustment))
+
+def get_credibility_score(source, content):
+    """Professional credibility scoring"""
+    tier, base_score = get_source_tier(source)
+    content_adjustment = analyze_content_quality(content)
     
-    return max(0, min(100, base_score))
+    final_score = base_score + content_adjustment
+    return max(0, min(100, final_score))
 
 def get_sentiment(text):
     """Analyze sentiment of text"""
@@ -55,33 +107,13 @@ def get_sentiment(text):
         polarity = blob.sentiment.polarity
         
         if polarity > 0.1:
-            return "Positive 😊", polarity
+            return "Positive 😊"
         elif polarity < -0.1:
-            return "Negative 😢", polarity
+            return "Negative 😢"
         else:
-            return "Neutral 😐", polarity
+            return "Neutral 😐"
     except:
-        return "Neutral 😐", 0
-
-def summarize_with_gemini(content, title):
-    """Use Gemini to summarize article"""
-    if not GEMINI_KEY:
-        return "API key not configured. Please set GEMINI_KEY environment variable."
-    
-    try:
-        model = genai.GenerativeModel('gemini-pro')
-        prompt = f"""Summarize this news article in 1-2 sentences. Be concise and factual.
-
-Title: {title}
-
-Content: {content[:2000]}
-
-Summary:"""
-        
-        response = model.generate_content(prompt, stream=False)
-        return response.text.strip()
-    except Exception as e:
-        return f"Could not summarize: {str(e)}"
+        return "Neutral 😐"
 
 def fetch_news(query, days=7):
     """Fetch news from NewsAPI"""
@@ -97,7 +129,7 @@ def fetch_news(query, days=7):
             "from": from_date,
             "sortBy": "publishedAt",
             "language": "en",
-            "pageSize": 10,
+            "pageSize": 15,
             "apiKey": NEWSAPI_KEY
         }
         
@@ -115,65 +147,65 @@ def fetch_news(query, days=7):
 class NewsAnalyzerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("📰 News Analyzer & Fake News Detector")
-        self.root.geometry("1200x800")
-        self.root.configure(bg="#f0f0f0")
+        self.root.title("📰 Professional News Analyzer & Credibility Detector")
+        self.root.geometry("1400x850")
+        self.root.configure(bg="#f5f5f5")
         
         self.articles = []
-        self.current_sort = "date"
+        self.current_sort = "credibility"
         
         self.setup_ui()
     
     def setup_ui(self):
-        """Setup the user interface"""
+        """Setup the professional user interface"""
         
         # Header
-        header_frame = tk.Frame(self.root, bg="#1f77b4", height=60)
+        header_frame = tk.Frame(self.root, bg="#1a1a1a", height=70)
         header_frame.pack(fill=tk.X, padx=0, pady=0)
         
-        title_label = tk.Label(header_frame, text="📰 News Analyzer & Fake News Detector", 
-                              font=("Arial", 20, "bold"), bg="#1f77b4", fg="white")
+        title_label = tk.Label(header_frame, text="📰 PROFESSIONAL NEWS ANALYZER", 
+                              font=("Segoe UI", 22, "bold"), bg="#1a1a1a", fg="#00d4ff")
         title_label.pack(pady=10)
         
+        subtitle = tk.Label(header_frame, text="Real-time Credibility Scoring | Sentiment Analysis | Fact-Based Journalism", 
+                           font=("Segoe UI", 9), bg="#1a1a1a", fg="#888")
+        subtitle.pack()
+        
         # Search Frame
-        search_frame = tk.Frame(self.root, bg="#f0f0f0")
-        search_frame.pack(fill=tk.X, padx=20, pady=10)
+        search_frame = tk.Frame(self.root, bg="#f5f5f5")
+        search_frame.pack(fill=tk.X, padx=20, pady=15)
         
-        tk.Label(search_frame, text="Search:", font=("Arial", 10), bg="#f0f0f0").pack(side=tk.LEFT, padx=5)
+        tk.Label(search_frame, text="Search Topic:", font=("Segoe UI", 11, "bold"), bg="#f5f5f5").pack(side=tk.LEFT, padx=5)
         
-        self.search_entry = tk.Entry(search_frame, font=("Arial", 10), width=30)
-        self.search_entry.pack(side=tk.LEFT, padx=5)
-        self.search_entry.insert(0, "AI")
+        self.search_entry = tk.Entry(search_frame, font=("Segoe UI", 11), width=35, relief=tk.FLAT)
+        self.search_entry.pack(side=tk.LEFT, padx=10)
+        self.search_entry.insert(0, "Technology")
         
-        tk.Button(search_frame, text="Search", command=self.search_news, 
-                 bg="#28a745", fg="white", font=("Arial", 10), padx=20).pack(side=tk.LEFT, padx=5)
+        tk.Button(search_frame, text="🔍 SEARCH", command=self.search_news, 
+                 bg="#00d4ff", fg="#000", font=("Segoe UI", 10, "bold"), padx=25, relief=tk.FLAT).pack(side=tk.LEFT, padx=5)
         
         # Options frame
-        options_frame = tk.Frame(self.root, bg="#f0f0f0")
-        options_frame.pack(fill=tk.X, padx=20, pady=5)
+        options_frame = tk.Frame(self.root, bg="#f5f5f5")
+        options_frame.pack(fill=tk.X, padx=20, pady=10)
         
-        tk.Label(options_frame, text="Sort by:", font=("Arial", 9), bg="#f0f0f0").pack(side=tk.LEFT, padx=5)
+        tk.Label(options_frame, text="Sort By:", font=("Segoe UI", 10, "bold"), bg="#f5f5f5").pack(side=tk.LEFT, padx=5)
         
-        sort_var = tk.StringVar(value="date")
-        tk.Radiobutton(options_frame, text="Date", variable=sort_var, value="date", 
-                      command=lambda: self.sort_articles("date"), bg="#f0f0f0").pack(side=tk.LEFT, padx=5)
-        tk.Radiobutton(options_frame, text="Credibility", variable=sort_var, value="credibility",
-                      command=lambda: self.sort_articles("credibility"), bg="#f0f0f0").pack(side=tk.LEFT, padx=5)
-        tk.Radiobutton(options_frame, text="Sentiment", variable=sort_var, value="sentiment",
-                      command=lambda: self.sort_articles("sentiment"), bg="#f0f0f0").pack(side=tk.LEFT, padx=5)
-        
-        self.summarize_var = tk.BooleanVar(value=True)
-        tk.Checkbutton(options_frame, text="AI Summaries", variable=self.summarize_var, 
-                      bg="#f0f0f0").pack(side=tk.LEFT, padx=20)
+        self.sort_var = tk.StringVar(value="credibility")
+        tk.Radiobutton(options_frame, text="Credibility ▼", variable=self.sort_var, value="credibility", 
+                      command=lambda: self.sort_articles("credibility"), bg="#f5f5f5", font=("Segoe UI", 9)).pack(side=tk.LEFT, padx=10)
+        tk.Radiobutton(options_frame, text="Latest", variable=self.sort_var, value="date",
+                      command=lambda: self.sort_articles("date"), bg="#f5f5f5", font=("Segoe UI", 9)).pack(side=tk.LEFT, padx=10)
+        tk.Radiobutton(options_frame, text="Sentiment", variable=self.sort_var, value="sentiment",
+                      command=lambda: self.sort_articles("sentiment"), bg="#f5f5f5", font=("Segoe UI", 9)).pack(side=tk.LEFT, padx=10)
         
         # Articles frame (scrollable)
-        articles_frame = tk.Frame(self.root, bg="#f0f0f0")
+        articles_frame = tk.Frame(self.root, bg="#f5f5f5")
         articles_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
         
         # Canvas with scrollbar
-        canvas = tk.Canvas(articles_frame, bg="#f0f0f0", highlightthickness=0)
+        canvas = tk.Canvas(articles_frame, bg="#f5f5f5", highlightthickness=0)
         scrollbar = ttk.Scrollbar(articles_frame, orient="vertical", command=canvas.yview)
-        scrollable_frame = tk.Frame(canvas, bg="#f0f0f0")
+        scrollable_frame = tk.Frame(canvas, bg="#f5f5f5")
         
         scrollable_frame.bind(
             "<Configure>",
@@ -189,20 +221,20 @@ class NewsAnalyzerApp:
         self.articles_container = scrollable_frame
         
         # Status bar
-        self.status_label = tk.Label(self.root, text="Ready", bg="#e0e0e0", font=("Arial", 9), anchor="w")
+        self.status_label = tk.Label(self.root, text="Ready. Enter a search term to begin.", 
+                                     bg="#2a2a2a", fg="#00d4ff", font=("Segoe UI", 9), anchor="w", padx=10)
         self.status_label.pack(fill=tk.X, padx=0, pady=0)
     
     def search_news(self):
         """Search for news articles"""
         query = self.search_entry.get().strip()
         if not query:
-            messagebox.showwarning("Warning", "Please enter a search term")
+            messagebox.showwarning("Input Required", "Please enter a search term")
             return
         
-        self.status_label.config(text="Searching...")
+        self.status_label.config(text="🔄 Searching for articles...")
         self.root.update()
         
-        # Run in thread to avoid freezing UI
         thread = threading.Thread(target=self._perform_search, args=(query,))
         thread.daemon = True
         thread.start()
@@ -213,30 +245,29 @@ class NewsAnalyzerApp:
         
         if error:
             self.root.after(0, lambda: messagebox.showerror("Error", error))
-            self.status_label.config(text="Error fetching news")
+            self.status_label.config(text="⚠️ Error fetching news")
             return
         
         if not articles:
-            self.root.after(0, lambda: messagebox.showinfo("Info", "No articles found"))
+            self.root.after(0, lambda: messagebox.showinfo("No Results", "No articles found for this topic"))
             self.status_label.config(text="No articles found")
             return
         
         self.articles = []
-        for idx, article in enumerate(articles):
+        for article in articles:
             title = article.get("title", "N/A")
             source = article.get("source", {}).get("name", "Unknown")
-            content = article.get("description", "") + " " + article.get("content", "")
+            description = article.get("description", "")
+            content = article.get("content", "")
+            full_content = description + " " + content if description else content
+            
             url = article.get("url", "")
             published = article.get("publishedAt", "N/A")[:10]
             
-            credibility = get_credibility_score(source, content)
-            sentiment, polarity = get_sentiment(content)
+            credibility = get_credibility_score(source, full_content)
+            sentiment = get_sentiment(full_content)
             
-            summary = ""
-            if self.summarize_var.get() and GEMINI_KEY:
-                summary = summarize_with_gemini(content, title)
-            else:
-                summary = article.get("description", "No summary available")[:150]
+            summary = description[:180] if description else "No summary available"
             
             self.articles.append({
                 "title": title,
@@ -248,66 +279,94 @@ class NewsAnalyzerApp:
                 "published": published
             })
         
+        # Sort by credibility by default
+        self.articles.sort(key=lambda x: x["credibility"], reverse=True)
+        
         self.root.after(0, self.display_articles)
-        self.root.after(0, lambda: self.status_label.config(text=f"Found {len(self.articles)} articles"))
+        self.root.after(0, lambda: self.status_label.config(text=f"✓ Found {len(self.articles)} articles. Sorted by credibility."))
     
     def sort_articles(self, sort_by):
         """Sort articles"""
         if sort_by == "credibility":
             self.articles.sort(key=lambda x: x["credibility"], reverse=True)
         elif sort_by == "sentiment":
-            self.articles.sort(key=lambda x: x["sentiment"], reverse=True)
+            self.articles.sort(key=lambda x: x["sentiment"])
         else:  # date
             self.articles.sort(key=lambda x: x["published"], reverse=True)
         
         self.display_articles()
+        self.status_label.config(text=f"✓ Sorted by {sort_by.capitalize()}")
     
     def display_articles(self):
-        """Display articles in UI"""
-        # Clear previous articles
+        """Display articles with professional styling"""
         for widget in self.articles_container.winfo_children():
             widget.destroy()
         
+        if not self.articles:
+            no_results = tk.Label(self.articles_container, text="No articles to display", 
+                                 font=("Segoe UI", 12), bg="#f5f5f5", fg="#999")
+            no_results.pack(pady=40)
+            return
+        
         for idx, article in enumerate(self.articles, 1):
-            card_frame = tk.Frame(self.articles_container, bg="white", relief=tk.RAISED)
-            card_frame.pack(fill=tk.X, padx=5, pady=5)
+            card_frame = tk.Frame(self.articles_container, bg="white", relief=tk.FLAT, bd=1)
+            card_frame.pack(fill=tk.X, padx=5, pady=8)
             
-            # Title and source
-            title_frame = tk.Frame(card_frame, bg="white")
-            title_frame.pack(fill=tk.X, padx=10, pady=5)
+            # Left accent bar (color coded by credibility)
+            cred = article["credibility"]
+            if cred >= 85:
+                accent_color = "#28a745"  # Green
+            elif cred >= 70:
+                accent_color = "#ffc107"  # Yellow
+            elif cred >= 50:
+                accent_color = "#ff9800"  # Orange
+            else:
+                accent_color = "#dc3545"  # Red
             
-            title_label = tk.Label(title_frame, text=f"{idx}. {article['title'][:100]}", 
-                                  font=("Arial", 11, "bold"), bg="white", wraplength=800, justify=tk.LEFT)
-            title_label.pack(anchor="w")
+            accent_frame = tk.Frame(card_frame, bg=accent_color, width=4)
+            accent_frame.pack(side=tk.LEFT, fill=tk.Y)
             
-            source_label = tk.Label(title_frame, text=f"Source: {article['source']} | {article['published']}", 
-                                   font=("Arial", 8), fg="#666", bg="white")
-            source_label.pack(anchor="w")
+            content_frame = tk.Frame(card_frame, bg="white")
+            content_frame.pack(fill=tk.BOTH, expand=True, padx=12, pady=8)
             
-            # Credibility and sentiment
-            info_frame = tk.Frame(card_frame, bg="white")
-            info_frame.pack(fill=tk.X, padx=10, pady=3)
+            # Title
+            title_label = tk.Label(content_frame, text=f"{idx}. {article['title']}", 
+                                  font=("Segoe UI", 11, "bold"), bg="white", wraplength=1200, justify=tk.LEFT)
+            title_label.pack(anchor="w", pady=(0, 5))
             
-            # Credibility color
-            cred_color = "#28a745" if article["credibility"] >= 80 else ("#ffc107" if article["credibility"] >= 50 else "#dc3545")
-            cred_label = tk.Label(info_frame, text=f"Credibility: {article['credibility']}%", 
-                                 font=("Arial", 9, "bold"), fg=cred_color, bg="white")
-            cred_label.pack(side=tk.LEFT, padx=5)
+            # Source and date row
+            meta_frame = tk.Frame(content_frame, bg="white")
+            meta_frame.pack(fill=tk.X, pady=(0, 8))
             
-            sentiment_label = tk.Label(info_frame, text=article["sentiment"], 
-                                      font=("Arial", 9), bg="white")
-            sentiment_label.pack(side=tk.LEFT, padx=5)
+            source_label = tk.Label(meta_frame, text=f"📰 {article['source']}", 
+                                   font=("Segoe UI", 9), fg="#555", bg="white")
+            source_label.pack(side=tk.LEFT, padx=(0, 15))
+            
+            date_label = tk.Label(meta_frame, text=f"📅 {article['published']}", 
+                                 font=("Segoe UI", 9), fg="#555", bg="white")
+            date_label.pack(side=tk.LEFT, padx=(0, 15))
+            
+            sentiment_label = tk.Label(meta_frame, text=article["sentiment"], 
+                                      font=("Segoe UI", 9), bg="white")
+            sentiment_label.pack(side=tk.LEFT)
+            
+            # Credibility score (prominent)
+            cred_text = f"CREDIBILITY: {cred}%"
+            cred_label = tk.Label(meta_frame, text=cred_text, 
+                                 font=("Segoe UI", 10, "bold"), fg=accent_color, bg="white")
+            cred_label.pack(side=tk.RIGHT, padx=(10, 0))
             
             # Summary
-            summary_label = tk.Label(card_frame, text=article["summary"][:200], 
-                                    font=("Arial", 9), bg="white", wraplength=800, justify=tk.LEFT)
-            summary_label.pack(fill=tk.X, padx=10, pady=5)
+            summary_label = tk.Label(content_frame, text=article["summary"], 
+                                    font=("Segoe UI", 9), bg="white", wraplength=1200, justify=tk.LEFT, fg="#333")
+            summary_label.pack(fill=tk.X, pady=(0, 8))
             
-            # Open link button
-            link_button = tk.Button(card_frame, text="Read Full Article", 
+            # Read button
+            link_button = tk.Button(content_frame, text="→ Read Full Article", 
                                    command=lambda url=article["url"]: webbrowser.open(url),
-                                   bg="#1f77b4", fg="white", font=("Arial", 8), padx=10)
-            link_button.pack(anchor="e", padx=10, pady=5)
+                                   bg=accent_color, fg="white", font=("Segoe UI", 9, "bold"), 
+                                   padx=15, pady=5, relief=tk.FLAT, cursor="hand2")
+            link_button.pack(anchor="w")
 
 def main():
     """Main entry point"""
