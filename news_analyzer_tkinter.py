@@ -172,7 +172,7 @@ class NewsAnalyzerApp:
         
         # Canvas with scrollbar
         canvas = tk.Canvas(articles_frame, bg="#f0f0f0", highlightthickness=0)
-        scrollbar = ttk.Scrollbar(articles_frame, orient="vertical", command=canvas.scroll)
+        scrollbar = ttk.Scrollbar(articles_frame, orient="vertical", command=canvas.yview)
         scrollable_frame = tk.Frame(canvas, bg="#f0f0f0")
         
         scrollable_frame.bind(
