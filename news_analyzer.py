@@ -18,39 +18,230 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Professional CSS theme
+# Discord-inspired CSS theme
 st.markdown("""
     <style>
+    body { 
+        background-color: #1e1e1e !important;
+        color: #e8ecf1;
+    }
+    .main {
+        background-color: #1e1e1e;
+    }
+    .stApp {
+        background-color: #1e1e1e;
+    }
     .main-header { 
-        font-size: 2.8em; 
-        color: #00d4ff; 
-        margin-bottom: 5px;
-        font-weight: bold;
+        font-size: 1.6em !important; 
+        color: #ffffff !important; 
+        margin-bottom: -8px !important;
+        margin-top: -16px !important;
+        padding: 0 !important;
+        font-weight: 900 !important;
         letter-spacing: 1px;
+        text-shadow: 0 2px 12px rgba(88, 020, 8, 0);
     }
     .subtitle {
-        font-size: 0.9em;
-        color: #888;
-        margin-bottom: 20px;
+        font-size: 0.7em;
+        color: #d5dadf;
+        margin-bottom: 4px;
+        margin-top: -12px;
+        padding: 0;
+        letter-spacing: 0.5px;
+        font-weight: 500;
     }
-    .tier1 { color: #28a745; font-weight: bold; }
-    .tier2 { color: #ffc107; font-weight: bold; }
-    .tier3 { color: #ff9800; font-weight: bold; }
-    .unreliable { color: #dc3545; font-weight: bold; }
+    /* Discord-like input fields */
+    .stTextInput input {
+        background-color: #2c2f33 !important;
+        color: #ffffff !important;
+        border: 1px solid #202225 !important;
+        border-radius: 6px !important;
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+        transition: all 0.2s ease !important;
+        height: 28px !important;
+        font-weight: 500 !important;
+    }
+    .stTextInput input:focus {
+        background-color: #2c2f33 !important;
+        border-color: #5865f2 !important;
+        box-shadow: 0 0 8px rgba(88, 101, 242, 0.4) !important;
+    }
+    .stTextInput input::placeholder {
+        color: #a0a8b0 !important;
+    }
+    /* Discord-like selectbox */
+    .stSelectbox [role="button"] {
+        background-color: #2c2f33 !important;
+        color: #ffffff !important;
+        border: 1px solid #202225 !important;
+        border-radius: 6px !important;
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+        min-height: 28px !important;
+        font-weight: 500 !important;
+    }
+    .stSelectbox [role="listbox"] {
+        background-color: #36393f !important;
+        border: 1px solid #202225 !important;
+        border-radius: 8px !important;
+    }
+    .stSelectbox [role="option"] {
+        color: #ffffff !important;
+        background-color: #2c2f33 !important;
+        font-weight: 500 !important;
+    }
+    .stSelectbox [role="option"]:hover {
+        background-color: #5865f2 !important;
+        color: white !important;
+    }
+    /* Discord-like checkbox */
+    .stCheckbox {
+        padding: 8px 12px;
+        background-color: #2c2f33;
+        border-radius: 6px;
+        border: 1px solid #202225;
+        transition: all 0.2s ease;
+    }
+    .stCheckbox label {
+        color: #e1e8ed !important;
+    }
+    /* Discord-like button */
+    .stButton > button {
+        background-color: #5865f2 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 6px 14px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+        font-size: 12px !important;
+        height: 28px !important;
+    }
+    .stButton > button:hover {
+        background-color: #4752c4 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(88, 101, 242, 0.5) !important;
+    }
+    .stButton > button:active {
+        transform: translateY(0);
+    }
+    /* Search/Filter container styling */
+    .search-panel {
+        background: linear-gradient(135deg, #2c2f33 0%, #23262a 100%);
+        border: 1px solid #202225;
+        border-radius: 8px;
+        padding: 8px 10px;
+        margin: 0;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    }
+    /* Stats/Metrics styling - Discord embed style */
+    .stats-panel {
+        background-color: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        margin: 0;
+        box-shadow: none;
+    }
+    .stMetric {
+        background-color: #2c2f33 !important;
+        border: 1px solid #202225 !important;
+        border-radius: 6px !important;
+        padding: 8px 10px !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
+        margin: 2px 0 !important;
+    }
+    .stMetric [data-testid="metricDelta"] {
+        color: #5865f2 !important;
+    }
+    .stMetric label {
+        color: #c8cdd3 !important;
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        margin: 0 !important;
+    }
+    .stMetric [data-testid="stMetricValue"] {
+        color: #ffffff !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        margin: 2px 0 0 0 !important;
+    }
+    /* Article cards */
+    .tier1 { color: #6ec46d; font-weight: bold; }
+    .tier2 { color: #5865f2; font-weight: bold; }
+    .tier3 { color: #8b7aa8; font-weight: bold; }
+    .unreliable { color: #d97777; font-weight: bold; }
     .card { 
-        background-color: white; 
-        padding: 20px; 
-        border-radius: 10px; 
-        border-left: 4px solid #00d4ff;
-        margin: 15px 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        background: linear-gradient(135deg, #2c2f33 0%, #23262a 100%);
+        padding: 12px; 
+        border-radius: 8px; 
+        border-left: 3px solid #5865f2;
+        border: 1px solid #202225;
+        margin: 4px 0;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        transition: all 0.2s ease;
+    }
+    .card:hover {
+        border-color: #5865f2;
+        box-shadow: 0 6px 20px rgba(88, 101, 242, 0.2);
     }
     .credibility-badge {
         display: inline-block;
-        padding: 5px 12px;
+        padding: 6px 14px;
         border-radius: 20px;
-        font-weight: bold;
-        font-size: 0.9em;
+        font-weight: 600;
+        font-size: 0.85em;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+    /* Divider styling */
+    .stDivider {
+        border-top: 1px solid #202225 !important;
+        margin: 2px 0 !important;
+    }
+    /* Subheader styling */
+    h2 {
+        color: #e1e8ed !important;
+        margin-top: 6px !important;
+        margin-bottom: 4px !important;
+        font-size: 16px !important;
+    }
+    /* Info boxes */
+    .stAlert {
+        background-color: #2c2f33 !important;
+        border-left: 4px solid #5865f2 !important;
+        border-radius: 8px !important;
+        color: #e1e8ed !important;
+    }
+    /* Spinner styling */
+    .stSpinner {
+        color: #5865f2 !important;
+    }
+    /* Reduce column gaps */
+    [data-testid="column"] {
+        gap: 0 !important;
+    }
+    /* Reduce form spacing */
+    .stForm {
+        gap: 0 !important;
+    }
+    /* Reduce container padding */
+    .stContainer {
+        padding: 0 !important;
+    }
+    /* Reduce horizontal spacing */
+    [data-testid="stVerticalBlockContainer"] {
+        gap: 0 !important;
+    }
+    /* Improve text contrast globally */
+    label {
+        color: #e8ecf1 !important;
+        font-weight: 500;
+    }
+    p {
+        color: #e1e8ed !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -99,15 +290,15 @@ def get_source_tier(source_name):
     source_lower = source_name.lower().strip()
     
     if any(tier1 in source_lower for tier1 in TIER_1_SOURCES):
-        return "tier1", 93, "#28a745"
+        return "tier1", 93, "#6ec46d"
     elif any(tier2 in source_lower for tier2 in TIER_2_SOURCES):
-        return "tier2", 78, "#ffc107"
+        return "tier2", 78, "#5b8fc4"
     elif any(tier3 in source_lower for tier3 in TIER_3_SOURCES):
-        return "tier3", 65, "#ff9800"
+        return "tier3", 65, "#8b7aa8"
     elif any(unreliable in source_lower for unreliable in UNRELIABLE_SOURCES):
-        return "unreliable", 35, "#dc3545"
+        return "unreliable", 35, "#d97777"
     else:
-        return "unknown", 55, "#6c757d"
+        return "unknown", 55, "#a0a8b0"
 
 def analyze_content_quality(content):
     """Analyze content for quality indicators"""
@@ -146,23 +337,23 @@ def analyze_content_quality(content):
     return max(-20, min(20, score_adjustment))
 
 def get_color_by_score(score):
-    """Get color gradient based on credibility score (red to green)"""
+    """Get color gradient based on credibility score (soft red to green)"""
     score = max(0, min(100, score))  # Ensure between 0-100
     
     if score < 20:
-        return "#dc3545"  # Dark red
+        return "#c97171"  # Soft red
     elif score < 40:
-        return "#ff6b6b"  # Red
+        return "#d97777"  # Soft red-orange
     elif score < 50:
-        return "#ff9800"  # Orange
+        return "#dfa676"  # Soft orange
     elif score < 60:
-        return "#ffc107"  # Yellow
+        return "#d4a574"  # Soft tan
     elif score < 75:
-        return "#58b368"  # Light green
+        return "#8b9d6b"  # Soft yellow-green
     elif score < 90:
-        return "#28a745"  # Green
+        return "#6ec46d"  # Soft green
     else:
-        return "#1e7e34"  # Dark green
+        return "#5aad5a"  # Dark soft green
 
 def get_credibility_score(source, content):
     """Professional credibility scoring"""
@@ -306,15 +497,15 @@ def display_article_card(article):
     st.markdown(f"""
     <div class="card" style="border-left-color: {color};">
         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
-            <h3 style="margin: 0; color: #1a1a1a;">{article['title']}</h3>
+            <h3 style="margin: 0; color: #ffffff; font-weight: 700;">{article['title']}</h3>
             <span class="credibility-badge" style="background-color: {color}; color: white;">
                 {cred}% CREDIBLE
             </span>
         </div>
-        <p style="color: #666; margin: 5px 0; font-size: 0.9em;">
+        <p style="color: #c8cdd3; margin: 5px 0; font-size: 0.9em; font-weight: 500;">
             📰 <strong>{article['source']}</strong> | 📅 {article['published'][:10]} | {article['sentiment']}
         </p>
-        <p style="color: #333; line-height: 1.6; margin: 10px 0;">
+        <p style="color: #e1e8ed; line-height: 1.6; margin: 10px 0;">
             {article['summary']}
         </p>
         <a href="{article['url']}" target="_blank" style="
@@ -335,7 +526,10 @@ def display_article_card(article):
 # =====================
 
 st.markdown('<h1 class="main-header">📰 NEWS ANALYZER</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Real-time Credibility Scoring | Sentiment Analysis | AI Summaries | Fact-Based Journalism</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Real-time Credibility Scoring | Sentiment Analysis | AI Summaries</p>', unsafe_allow_html=True)
+
+# Discord-like search and filter panel
+st.markdown('<div class="search-panel">', unsafe_allow_html=True)
 
 col1, col2 = st.columns([2, 1])
 
@@ -358,7 +552,7 @@ with col3:
     if st.button("🚀 FETCH & ANALYZE", type="primary"):
         st.session_state.force_refresh = True
 
-st.divider()
+st.markdown('</div>', unsafe_allow_html=True)
 
 # Fetch and process
 if search_query:
@@ -394,8 +588,7 @@ if search_query:
         elif sort_by == "Sentiment":
             processed.sort(key=lambda x: x["polarity"], reverse=True)
         
-        # Statistics
-        st.subheader("📊 Analysis Overview")
+        # Statistics - Discord embed style
         stats_col1, stats_col2, stats_col3, stats_col4 = st.columns(4)
         
         avg_credibility = sum(a["credibility"] for a in processed) / len(processed)
@@ -404,15 +597,13 @@ if search_query:
         neutral_count = len(processed) - positive_count - negative_count
         
         with stats_col1:
-            st.metric("📈 Articles", len(processed))
+            st.metric("📈 Articles Found", len(processed))
         with stats_col2:
             st.metric("🎯 Avg Credibility", f"{avg_credibility:.0f}%")
         with stats_col3:
-            st.metric("😊 Positive", f"{positive_count}/{len(processed)}")
+            st.metric("😊 Positive Tone", f"{positive_count}")
         with stats_col4:
-            st.metric("😢 Negative", f"{negative_count}/{len(processed)}")
-        
-        st.divider()
+            st.metric("😢 Negative Tone", f"{negative_count}")
         
         # Display articles
         st.subheader("📰 Analyzed Articles")

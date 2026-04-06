@@ -183,7 +183,7 @@ class NewsAnalyzerApp:
         """Setup futuristic AI-powered 2026 news interface"""
         
         # ===== HEADER SECTION =====
-        header_frame = tk.Frame(self.root, bg="#242424", height=110)
+        header_frame = tk.Frame(self.root, bg="#242424", height=75)
         header_frame.pack(fill=tk.X, padx=0, pady=0)
         header_frame.pack_propagate(False)
         
@@ -193,31 +193,31 @@ class NewsAnalyzerApp:
         
         # Title section
         title_section = tk.Frame(header_frame, bg="#242424")
-        title_section.pack(fill=tk.X, padx=40, pady=(12, 0))
+        title_section.pack(fill=tk.X, padx=40, pady=(6, 0))
         
         title_label = tk.Label(title_section, text="◆ NEWS ANALYZER AI ◆", 
-                              font=("Helvetica", 26, "bold"), bg="#242424", fg="#5b8fc4")
-        title_label.pack(pady=(0, 2))
+                              font=("Helvetica", 20, "bold"), bg="#242424", fg="#5b8fc4")
+        title_label.pack(pady=(0, 1))
         
-        subtitle = tk.Label(header_frame, text="next-generation credibility intelligence | real-time analysis engine | fact-verified reporting", 
-                           font=("Helvetica", 8), bg="#242424", fg="#6ec46d")
-        subtitle.pack(pady=(0, 8))
+        subtitle = tk.Label(header_frame, text="credibility intelligence | sentiment analysis | AI summaries", 
+                           font=("Helvetica", 7), bg="#242424", fg="#6ec46d")
+        subtitle.pack(pady=(0, 4))
         
         # ===== SEARCH SECTION =====
-        search_frame = tk.Frame(self.root, bg="#1e1e1e", height=95)
+        search_frame = tk.Frame(self.root, bg="#1e1e1e", height=65)
         search_frame.pack(fill=tk.X, padx=0, pady=0)
         search_frame.pack_propagate(False)
         
         search_inner = tk.Frame(search_frame, bg="#1e1e1e")
-        search_inner.pack(fill=tk.X, padx=40, pady=15)
+        search_inner.pack(fill=tk.X, padx=40, pady=10)
         
         tk.Label(search_inner, text="🔍 SEARCH:", font=("Helvetica", 11, "bold"), 
                 bg="#1e1e1e", fg="#5b8fc4").pack(side=tk.LEFT, padx=(0, 15))
         
-        self.search_entry = tk.Entry(search_inner, font=("Helvetica", 12), width=42, relief=tk.FLAT, 
+        self.search_entry = tk.Entry(search_inner, font=("Helvetica", 11), width=42, relief=tk.FLAT, 
                                      bg="#2d2d2d", fg="#6ec46d", bd=0, highlightthickness=2, 
                                      highlightbackground="#5b8fc4", highlightcolor="#5b8fc4", insertbackground="#5b8fc4")
-        self.search_entry.pack(side=tk.LEFT, padx=(0, 15), ipady=9)
+        self.search_entry.pack(side=tk.LEFT, padx=(0, 12), ipady=7)
         self.search_entry.insert(0, "Technology")
         
         search_btn = tk.Button(search_inner, text="❯ ANALYZE", command=self.search_news, 
@@ -227,12 +227,12 @@ class NewsAnalyzerApp:
         search_btn.pack(side=tk.LEFT)
         
         # ===== CONTROLS SECTION =====
-        controls_frame = tk.Frame(self.root, bg="#1e1e1e", height=65)
+        controls_frame = tk.Frame(self.root, bg="#1e1e1e", height=50)
         controls_frame.pack(fill=tk.X, padx=0, pady=0)
         controls_frame.pack_propagate(False)
         
         controls_inner = tk.Frame(controls_frame, bg="#1e1e1e")
-        controls_inner.pack(fill=tk.X, padx=40, pady=12)
+        controls_inner.pack(fill=tk.X, padx=40, pady=8)
         
         tk.Label(controls_inner, text="SORT:", font=("Helvetica", 10, "bold"), 
                 bg="#1e1e1e", fg="#5b8fc4").pack(side=tk.LEFT, padx=(0, 20))
@@ -274,7 +274,7 @@ class NewsAnalyzerApp:
         self.articles_container = scrollable_frame
         
         # ===== STATUS BAR =====
-        status_frame = tk.Frame(self.root, bg="#242424", height=45)
+        status_frame = tk.Frame(self.root, bg="#242424", height=35)
         status_frame.pack(fill=tk.X, padx=0, pady=0)
         status_frame.pack_propagate(False)
         
@@ -282,7 +282,7 @@ class NewsAnalyzerApp:
         bottom_accent.pack(fill=tk.X)
         
         self.status_label = tk.Label(status_frame, text="▸ Ready. Enter a search query to analyze articles.", 
-                                     bg="#242424", fg="#6ec46d", font=("Helvetica", 9, "bold"), anchor="w", padx=40, pady=10)
+                                     bg="#242424", fg="#6ec46d", font=("Helvetica", 8, "bold"), anchor="w", padx=40, pady=6)
         self.status_label.pack(fill=tk.X)
     
     def search_news(self):
