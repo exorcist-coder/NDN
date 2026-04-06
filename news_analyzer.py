@@ -6,9 +6,15 @@ from textblob import TextBlob
 import os
 from dotenv import load_dotenv
 import time
+import webbrowser
 
 # Load environment variables
 load_dotenv()
+
+# Auto-open browser on startup
+if 'browser_opened' not in st.session_state:
+    webbrowser.open('http://localhost:8501')
+    st.session_state.browser_opened = True
 
 # Set page config
 st.set_page_config(
@@ -51,29 +57,29 @@ CREDIBILITY_SCORES = {
     "guardian": 88, "new york times": 87, "nyt": 87, "washington post": 86,
     "financial times": 85, "the times": 84, "independent": 82, "telegraph": 80,
     "politico": 78, "cnbc": 80, "business insider": 75, "medium": 40,
-    "twitter": 35, "reddit": 30, "unknown": 50
+    "twitter": 35, "reddit": 30, "unknown": 65
 }
 
 def get_credibility_score(source, content):
     """Calculate credibility score based on source and content"""
     # Base score from source
     source_lower = source.lower()
-    base_score = CREDIBILITY_SCORES.get("unknown", 50)
+    base_score = CREDIBILITY_SCORES.get("unknown", 65)
     
     for known_source, score in CREDIBILITY_SCORES.items():
         if known_source in source_lower:
             base_score = score
             break
     
-    # Content quality adjustments
+    # Content quality adjustments (less harsh)
     exclamation_count = content.count("!")
     caps_words = len([w for w in content.split() if w.isupper() and len(w) > 1])
     
-    # Penalize sensationalism
-    if exclamation_count > 3:
-        base_score -= 10
-    if caps_words > 5:
+    # Penalize sensationalism (lighter penalties)
+    if exclamation_count > 5:
         base_score -= 5
+    if caps_words > 10:
+        base_score -= 3
     
     return max(0, min(100, base_score))
 
