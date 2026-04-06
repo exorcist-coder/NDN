@@ -145,36 +145,6 @@ def analyze_content_quality(content):
     
     return max(-20, min(20, score_adjustment))
 
-def clean_summary(text, max_length=200):
-    """Clean and validate summary text"""
-    if not text or not isinstance(text, str):
-        return "No summary available"
-    
-    # Remove URLs and file paths
-    cleaned = text
-    import re
-    cleaned = re.sub(r'https?://\S+', '', cleaned)
-    cleaned = re.sub(r'\S+\.\w+/\S+', '', cleaned)  # Remove file paths
-    cleaned = re.sub(r'\[.*?\]', '', cleaned)  # Remove brackets
-    
-    # Clean up whitespace
-    cleaned = ' '.join(cleaned.split())
-    
-    # Truncate at sentence boundary
-    if len(cleaned) > max_length:
-        truncated = cleaned[:max_length]
-        last_period = truncated.rfind('.')
-        last_comma = truncated.rfind(',')
-        last_space = truncated.rfind(' ')
-        
-        cut_pos = max(last_period, last_comma, last_space)
-        if cut_pos > max_length - 50:
-            cleaned = truncated[:cut_pos+1]
-        else:
-            cleaned = truncated.rstrip() + "..."
-    
-    return cleaned.strip() if cleaned.strip() else "No summary available"
-
 def get_color_by_score(score):
     """Get color gradient based on credibility score (red to green)"""
     score = max(0, min(100, score))  # Ensure between 0-100
@@ -304,9 +274,9 @@ def process_articles(articles, use_gemini=True):
         if use_gemini and GEMINI_KEY:
             summary = summarize_with_gemini(full_content, title)
         
-        # Fallback to description (cleaned)
+        # Fallback to description
         if not summary:
-            summary = clean_summary(description, max_length=200)
+            summary = description[:200] if description else "No summary available"
         
         processed.append({
             "title": title,
@@ -329,54 +299,34 @@ def process_articles(articles, use_gemini=True):
     return processed
 
 def display_article_card(article):
-    """Display individual article card with professional styling and thumbnail"""
+    """Display individual article card with professional styling"""
     cred = article["credibility"]
     color = article["color"]
-    image = article.get("image", "")
-    
-    # Build image HTML if available
-    image_html = ""
-    if image and image.strip():
-        image_html = f"""
-        <img src="{image}" style="
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-            border-radius: 8px 8px 0 0;
-            display: block;
-            margin-bottom: 15px;
-        " onerror="this.style.display='none';" alt="Article thumbnail">
-        """
     
     st.markdown(f"""
-    <div class="card" style="border-left-color: {color}; overflow: hidden;">
-        {image_html}
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
-            <h3 style="margin: 0; color: #1a1a1a; flex: 1; line-height: 1.3;">{article['title']}</h3>
-            <span class="credibility-badge" style="background-color: {color}; color: white; flex-shrink: 0; margin-left: 10px;">
-                {cred}%
+    <div class="card" style="border-left-color: {color};">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+            <h3 style="margin: 0; color: #1a1a1a;">{article['title']}</h3>
+            <span class="credibility-badge" style="background-color: {color}; color: white;">
+                {cred}% CREDIBLE
             </span>
         </div>
-        <p style="color: #666; margin: 8px 0; font-size: 0.85em; line-height: 1.4;">
+        <p style="color: #666; margin: 5px 0; font-size: 0.9em;">
             📰 <strong>{article['source']}</strong> | 📅 {article['published'][:10]} | {article['sentiment']}
         </p>
-        <p style="color: #333; line-height: 1.6; margin: 12px 0; font-size: 0.95em;">
+        <p style="color: #333; line-height: 1.6; margin: 10px 0;">
             {article['summary']}
         </p>
         <a href="{article['url']}" target="_blank" style="
             display: inline-block;
-            padding: 10px 18px;
+            padding: 8px 16px;
             background-color: {color};
             color: white;
             text-decoration: none;
-            border-radius: 4px;
+            border-radius: 5px;
             font-weight: bold;
             margin-top: 10px;
-            font-size: 0.9em;
-            transition: opacity 0.2s;
-        " onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
-            → Read Full Article
-        </a>
+        ">→ Read Full Article</a>
     </div>
     """, unsafe_allow_html=True)
 
