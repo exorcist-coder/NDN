@@ -1,5 +1,6 @@
 import tkinter as tk
-from tkinter import ttk, scrolledtext, messagebox, threading
+from tkinter import ttk, scrolledtext, messagebox
+import threading
 import requests
 from datetime import datetime, timedelta
 import google.generativeai as genai
