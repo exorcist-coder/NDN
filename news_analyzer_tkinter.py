@@ -43,6 +43,36 @@ UNRELIABLE_SOURCES = {  # Unreliable (below 50%)
     "twitter", "x", "reddit", "4chan", "tiktok", "instagram"
 }
 
+def clean_summary(text, max_length=200):
+    """Clean and validate summary text"""
+    if not text or not isinstance(text, str):
+        return "No summary available"
+    
+    # Remove URLs and file paths
+    cleaned = text
+    import re
+    cleaned = re.sub(r'https?://\S+', '', cleaned)
+    cleaned = re.sub(r'\S+\.\w+/\S+', '', cleaned)  # Remove file paths
+    cleaned = re.sub(r'\[.*?\]', '', cleaned)  # Remove brackets
+    
+    # Clean up whitespace
+    cleaned = ' '.join(cleaned.split())
+    
+    # Truncate at sentence boundary
+    if len(cleaned) > max_length:
+        truncated = cleaned[:max_length]
+        last_period = truncated.rfind('.')
+        last_comma = truncated.rfind(',')
+        last_space = truncated.rfind(' ')
+        
+        cut_pos = max(last_period, last_comma, last_space)
+        if cut_pos > max_length - 50:
+            cleaned = truncated[:cut_pos+1]
+        else:
+            cleaned = truncated.rstrip() + "..."
+    
+    return cleaned.strip() if cleaned.strip() else "No summary available"
+
 def get_source_tier(source_name):
     """Determine source credibility tier"""
     source_lower = source_name.lower().strip()
@@ -293,7 +323,7 @@ class NewsAnalyzerApp:
             credibility, color = get_credibility_score(source, full_content)
             sentiment = get_sentiment(full_content)
             
-            summary = description[:180] if description else "No summary available"
+            summary = clean_summary(description, max_length=180)
             
             self.articles.append({
                 "title": title,

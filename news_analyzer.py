@@ -145,6 +145,36 @@ def analyze_content_quality(content):
     
     return max(-20, min(20, score_adjustment))
 
+def clean_summary(text, max_length=200):
+    """Clean and validate summary text"""
+    if not text or not isinstance(text, str):
+        return "No summary available"
+    
+    # Remove URLs and file paths
+    cleaned = text
+    import re
+    cleaned = re.sub(r'https?://\S+', '', cleaned)
+    cleaned = re.sub(r'\S+\.\w+/\S+', '', cleaned)  # Remove file paths
+    cleaned = re.sub(r'\[.*?\]', '', cleaned)  # Remove brackets
+    
+    # Clean up whitespace
+    cleaned = ' '.join(cleaned.split())
+    
+    # Truncate at sentence boundary
+    if len(cleaned) > max_length:
+        truncated = cleaned[:max_length]
+        last_period = truncated.rfind('.')
+        last_comma = truncated.rfind(',')
+        last_space = truncated.rfind(' ')
+        
+        cut_pos = max(last_period, last_comma, last_space)
+        if cut_pos > max_length - 50:
+            cleaned = truncated[:cut_pos+1]
+        else:
+            cleaned = truncated.rstrip() + "..."
+    
+    return cleaned.strip() if cleaned.strip() else "No summary available"
+
 def get_color_by_score(score):
     """Get color gradient based on credibility score (red to green)"""
     score = max(0, min(100, score))  # Ensure between 0-100
@@ -274,9 +304,9 @@ def process_articles(articles, use_gemini=True):
         if use_gemini and GEMINI_KEY:
             summary = summarize_with_gemini(full_content, title)
         
-        # Fallback to description
+        # Fallback to description (cleaned)
         if not summary:
-            summary = description[:200] if description else "No summary available"
+            summary = clean_summary(description, max_length=200)
         
         processed.append({
             "title": title,
