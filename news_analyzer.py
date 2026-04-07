@@ -51,7 +51,7 @@ st.markdown("""
         letter-spacing: 0.5px;
         font-weight: 500;
     }
-    /* Discord-like input fields */
+    /* input fields */
     .stTextInput input {
         background-color: #2c2f33 !important;
         color: #ffffff !important;
@@ -71,7 +71,7 @@ st.markdown("""
     .stTextInput input::placeholder {
         color: #a0a8b0 !important;
     }
-    /* Discord-like selectbox */
+    /* selectbox */
     .stSelectbox [role="button"] {
         background-color: #2c2f33 !important;
         color: #ffffff !important;
@@ -96,7 +96,7 @@ st.markdown("""
         background-color: #5865f2 !important;
         color: white !important;
     }
-    /* Discord-like checkbox */
+    /* checkbox */
     .stCheckbox {
         padding: 8px 12px;
         background-color: #2c2f33;
@@ -107,7 +107,7 @@ st.markdown("""
     .stCheckbox label {
         color: #e1e8ed !important;
     }
-    /* Discord-like button */
+    /* button */
     .stButton > button {
         background-color: #5865f2 !important;
         color: white !important;
@@ -127,7 +127,7 @@ st.markdown("""
     .stButton > button:active {
         transform: translateY(0);
     }
-    /* Search/Filter container styling */
+    /* Search/Filter */
     .search-panel {
         background: linear-gradient(135deg, #2c2f33 0%, #23262a 100%);
         border: 1px solid #202225;
@@ -136,7 +136,7 @@ st.markdown("""
         margin: 0;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
     }
-    /* Stats/Metrics styling - Discord embed style */
+    /* Stats/Metrics style */
     .stats-panel {
         background-color: transparent;
         border: none;
@@ -254,8 +254,8 @@ if 'cache_time' not in st.session_state:
     st.session_state.cache_time = None
 
 # Configure APIs
-NEWSAPI_KEY = os.getenv("NEWSAPI_KEY", "")
-GEMINI_KEY = os.getenv("GEMINI_KEY", "")
+NEWSAPI_KEY = st.secrets[] ("NEWSAPI_KEY", "")
+GEMINI_KEY = st.secrets[] ("GEMINI_KEY", "")
 
 if GEMINI_KEY:
     genai.configure(api_key=GEMINI_KEY)
