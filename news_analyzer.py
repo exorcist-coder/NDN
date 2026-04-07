@@ -254,7 +254,7 @@ if 'cache_time' not in st.session_state:
     st.session_state.cache_time = None
 
 # Configure APIs
-NEWSAPI_KEY = st.secrets.get("NEWSAPI_KEY", "")
+NEWSAPI_KEY = st.secrets.get("NEWSAPI_KEY") or os.getenv("NEWSAPI_KEY", "")
 GEMINI_KEY = st.secrets.get("GEMINI_KEY", "")
 
 if GEMINI_KEY:
