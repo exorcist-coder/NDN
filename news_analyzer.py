@@ -9,6 +9,11 @@ import time
 
 # Load environment variables
 load_dotenv()
+# News API
+NEWS_API_KEY= 97d1ce085bfd40baa38cee73971a7450
+
+# Gemini API
+GEMINI_API_KEY= AIzaSyCUu2iDqhoacvHPF3iUctQrLs-iKBVyWGs
 
 # Set page config
 st.set_page_config(
