@@ -254,8 +254,8 @@ if 'cache_time' not in st.session_state:
     st.session_state.cache_time = None
 
 # Configure APIs
-NEWSAPI_KEY = st.secrets[] ("NEWSAPI_KEY", "")
-GEMINI_KEY = st.secrets[] ("GEMINI_KEY", "")
+NEWSAPI_KEY = st.secrets["NEWSAPI_KEY", ""]
+GEMINI_KEY = st.secrets["GEMINI_KEY", ""]
 
 if GEMINI_KEY:
     genai.configure(api_key=GEMINI_KEY)
