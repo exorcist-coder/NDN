@@ -11,9 +11,6 @@ import time
 load_dotenv()
 
 
-news_api_key =["NEWS_API_KEY"]
-gemini_api_key =["GEMINI_API_KEY"]
-
 # Set page config
 st.set_page_config(
     page_title="📰 News Analyzer",
