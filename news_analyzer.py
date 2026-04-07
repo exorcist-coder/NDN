@@ -256,10 +256,10 @@ if 'cache_time' not in st.session_state:
 # Configure APIs
 try:
     NEWSAPI_KEY = st.secrets["NEWSAPI_KEY"]
-    GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
+    GEMINI_KEY = st.secrets["GEMINI_API_KEY"]
 except (KeyError, FileNotFoundError):
     NEWSAPI_KEY = os.getenv("NEWSAPI_KEY", "")
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_KEY = os.getenv("GEMINI_API_KEY", "")
 
 if GEMINI_KEY:
     genai.configure(api_key=GEMINI_KEY)
